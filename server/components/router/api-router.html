@@ -1,0 +1,51 @@
+<link rel="import" href="../../../client/bower_components/polymer/polymer.html">
+<link rel="import" href="../../../node_modules/express-web-components/express-middleware.html">
+<link rel="import" href="../../../node_modules/express-web-components/express-router.html">
+
+
+<dom-module id="api-router">
+    <template>
+        <express-router path="/api">
+            <express-middleware method="get" path="/running-since" callback="[[runningSinceHandler]]"></express-middleware>
+            <express-middleware method="get" path="/source-code" callback="[[sourceCodeHandler]]"></express-middleware>
+            <express-middleware method="get" path="/cat-photo" callback="[[catHandler]]"></express-middleware>
+            <express-middleware method="get" path="/cats" callback="[[catsHandler]]"></express-middleware>
+        </express-router>
+    </template>
+
+    <script>
+        class ApiRouter extends Polymer.Element {
+            static get is() {
+                return 'api-router';
+            }
+
+            constructor() {
+                super();
+
+                this.port = process.env.PORT || 5000;
+            }
+
+
+            runningSinceHandler(req, res) {
+                res.send(new Date());
+            }
+
+            sourceCodeHandler(req, res) {
+
+                res.sendFile(path.resolve('./server/components/server-app/server-app.html'));
+            }
+
+            catHandler(req, res) {
+                res.sendFile(path.resolve('./server/cat-hunting.jpg'));
+            }
+
+            catsHandler(req, res) {
+
+                res.sendFile("cats Handler");
+            }
+
+        }
+
+        Polymer(ApiRouter);
+    </script>
+</dom-module>

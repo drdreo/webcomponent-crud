@@ -1,0 +1,190 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api-column.html">
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api.html">
+
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+      integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
+
+<dom-module id="user-app">
+    <template>
+        <iron-ajax id="ajax_getusers" url="db/user-list?sort=[[sortProperty]]" method="GET"
+                   on-response="_handleGetUsers" handleAs="json"></iron-ajax>
+
+
+        <button on-click="getUsers">Get Users</button>
+        <h2>Add User</h2>
+
+        <iron-form id="eventsDemo">
+            <form method="POST" action="db/new-user" id="form" enctype="application/x-www-form-urlencoded">
+                <paper-input label="Username" name="username" required auto-validate
+                             error-message="needs some text!"></paper-input>
+                <paper-input label="Password" name="password" type="password" required auto-validate char-counter
+                             maxlength="10"></paper-input>
+                <paper-checkbox required>You must check this box</paper-checkbox>
+                <paper-input label="email" id="inputWithButton" name="email">
+                    <iron-icon icon="mail" slot="prefix"></iron-icon>
+                    <div slot="suffix">@email.com</div>
+                    <paper-icon-button slot="suffix" onclick="function clearInput(){}" icon="clear" alt="clear"
+                                       title="clear">
+                    </paper-icon-button>
+                </paper-input>
+                <br>
+                <paper-button raised disabled on-click="_do" id="eventsDemoSubmit">
+                    <paper-spinner id="spinner"></paper-spinner>
+                    Submit
+                </paper-button>
+                <paper-button raised on-click="_reset">Reset</paper-button>
+                <div class="output"></div>
+            </form>
+        </iron-form>
+        <span> User list: </span>
+
+        <div class="card-content">
+            <paper-datatable-api data="[[users]]" on-sort="_handleSort"
+                                 on-filter="_handleFilter">
+                <paper-datatable-api-column header="Username" draggable-column filter sortable property="username">
+                    <template>
+                        <span>{{value}}</span>
+                    </template>
+                </paper-datatable-api-column>
+                <paper-datatable-api-column header="Email" filter sortable property="email">
+                    <template>
+                        <span>{{value}}</span>
+                    </template>
+                </paper-datatable-api-column>
+            </paper-datatable-api>
+        </div>
+
+    </template>
+
+    <script>
+
+
+        class UserApp extends Polymer.Element {
+            static get is() {
+                return 'user-app';
+            }
+
+            constructor() {
+                super();
+                this._submitted = false;
+                this._presubmitted = false;
+            }
+
+            ready() {
+                super.ready();
+
+                /* form functions*/
+                let eventsDemoSubmit = this.shadowRoot.getElementById('eventsDemoSubmit');
+                let spinner = this.shadowRoot.getElementById('spinner');
+
+                this.$.eventsDemo.addEventListener('iron-form-submit', function () {
+                    console.log("--- iron form submit --- ");
+
+//                    this.querySelector('.output').innerHTML = JSON.stringify(event.detail);
+                    spinner.active = false;
+                    spinner.hidden = true;
+                    eventsDemoSubmit.disabled = false;
+
+                    this._submitted = true;
+                }.bind(this));
+
+                this.$.eventsDemo.addEventListener('iron-form-presubmit', function () {
+                    console.log("--- iron form presubmit --- ");
+                    this._presubmitted = true;
+                }.bind(this));
+
+                this.$.eventsDemo.addEventListener('iron-form-response', function () {
+                    console.log("--- iron form response --- ");
+                    console.log(this._submitted);
+                    console.log(this._presubmitted);
+                }.bind(this));
+
+                let eventsDemo = this.shadowRoot.getElementById('eventsDemo');
+                eventsDemo.addEventListener('change', function (event) {
+                    console.log("---- form changed -----");
+
+                    // Validate the entire form to see if we should enable the `Submit` button.
+                    eventsDemoSubmit.disabled = !eventsDemo.validate();
+                });
+
+            }
+
+            _do() {
+                let spinner = this.shadowRoot.getElementById('spinner');
+
+                spinner.active = true;
+                spinner.hidden = false;
+                this.$.eventsDemo.submit();
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+
+                this.users = null;
+
+            }
+
+            getUsers() {
+                this.shadowRoot.querySelector('#ajax_getusers').generateRequest();
+            }
+
+
+            _handleGetUsers(response) {
+                console.log(response.detail.response);
+                this.users = response.detail.response.users;
+            }
+
+
+            _handleSort(event) {
+                this.sortProperty = event.detail.sort.property + ',' + event.detail.sort.direction;
+
+                this.getUsers();
+            }
+
+            _handleFilter(event) {
+                let filter = event.detail.filter.value;
+                let column = event.detail.filter.property;
+            }
+
+            static _reset() {
+                console.log("reset");
+
+                this.$.eventsDemo.reset();
+            }
+
+        }
+
+
+        window.addEventListener('WebComponentsReady', function () {
+            window.customElements.define(UserApp.is, UserApp);
+        });
+
+    </script>
+</dom-module>

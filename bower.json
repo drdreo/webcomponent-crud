@@ -1,0 +1,19 @@
+{
+  "name": "webcomponent-cms",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Andreas Hahn <andreas@andreas-hahn.at>"
+  ],
+  "license": "MIT",
+  "homepage": "andreas-hahn.at",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "polymer": "^2.0.1",
+    "iron-ajax": "^2.0.2"
+  }
+}

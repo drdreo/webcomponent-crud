@@ -1,0 +1,22 @@
+{
+  "name": "webcomponent-cms",
+  "version": "0.1.0",
+  "description": "This project is the practical work to my bachlor thesis.",
+  "scripts": {
+    "setup": "npm install bower && bower install && xvfb-run electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html",
+    "dev": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html",
+    "dev-window": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html --window"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": "8.0.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express-web-components": "^0.5.4",
+    "mongodb": "^2.2.31",
+    "mongoose": "^4.11.10",
+    "scram-engine": "^0.6.17"
+  },
+  "devDependencies": {}
+}
