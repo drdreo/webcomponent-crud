@@ -8,6 +8,8 @@
 <dom-module id="db-router">
     <template>
         <express-router path="/db">
+            <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
+
             <express-middleware method="get" path="/user-list" callback="[[userListHandler]]"></express-middleware>
             <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
         </express-router>
@@ -92,9 +94,27 @@
                     }
                     else
                         res.json({success: true, message: "User added successfully."});
-
                 });
 
+            }
+
+            //check login
+            loginHandler(req, res) {
+
+                console.log("db-router login attempt");
+
+                var username = req.body.username;
+                var password = req.body.password;
+
+                UsersModel.validateUser(username, password, (err, valid) => {
+                    if (err) {
+                        res.json({success: false, valid: false, message: `Failed to validate user. Error: ${err}`});
+                    }
+                    else {
+                        res.json({success: true, valid: valid, message: "User validated."});
+                        // TODO: set userToken in localStorage or session if valid
+                    }
+                });
             }
         }
 

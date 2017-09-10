@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-grid/iron-grid.html">
+
+<link rel="import" href="../custom_components/paper-login.html">
+
+<dom-module id="login-app">
+    <template>
+
+        <iron-grid log>
+            <div class="s4 offset-s4">
+                <paper-login login-url="db/login">
+                </paper-login>
+            </div>
+        </iron-grid>
+    </template>
+
+    <script>
+        class LoginApp extends Polymer.Element {
+            static get is() {
+                return 'login-app';
+            }
+
+
+            connectedCallback() {
+                super.connectedCallback();
+
+            }
+
+        }
+
+        window.customElements.define(LoginApp.is, LoginApp);
+    </script>
+</dom-module>

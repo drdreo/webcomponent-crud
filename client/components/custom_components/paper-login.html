@@ -1,0 +1,172 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-behaviors/paper-button-behavior.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="paper-login">
+    <template>
+        <style is="custom-style">
+            :host {
+                display: flex;
+                width: 100%;
+                position: relative;
+
+                @apply(--shadow-transition);
+                @apply(--shadow-elevation-12dp);
+            }
+
+            paper-input {
+                margin-right: 15px;
+                margin-left: 15px;
+            }
+
+            .container {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                width: inherit;
+            }
+
+            iron-form {
+                width: inherit;
+            }
+
+            paper-button {
+                width: 100px;
+                margin-bottom: 5px;
+            }
+
+            .text-error {
+                color: #db4437;
+                text-align: center;
+                @apply(--paper-font-caption);
+
+            }
+            #spinner{
+                margin-right:5px;
+            }
+        </style>
+
+        <div class="container">
+            <iron-form id="ironForm" style="clear:both; background-color: white;">
+                <form method="POST" action="[[loginUrl]]" id="form" enctype="application/x-www-form-urlencoded">
+
+                    <div class="text-error">
+                        <span id="err-msg"></span>
+                    </div>
+                    <div style="">
+                        <paper-input label="Username" name="username" required auto-validate
+                                     error-message="Username is needed!"></paper-input>
+                    </div>
+                    <div style="padding-bottom:10px;">
+                        <paper-input label="Password" name="password" type="password" required auto-validate
+                                     error-message="Invalid password!"></paper-input>
+                    </div>
+                    <div style="text-align: center;">
+                        <paper-button raised disabled class="inigo disabled" on-click="_submit" id="loginSubmit">
+                            <paper-spinner id="spinner"></paper-spinner>
+                            Login
+                        </paper-button>
+                    </div>
+
+                </form>
+            </iron-form>
+        </div>
+    </template>
+
+    <script>
+        class PaperLogin extends Polymer.Element {
+            static get is() {
+                return 'paper-login';
+            }
+
+            static get properties() {
+                return {
+                    loginUrl: String
+                }
+            }
+
+
+            constructor() {
+                super();
+                this._submitted = false;
+                this._presubmitted = false;
+            }
+
+            ready() {
+                super.ready();
+
+                /* form functions*/
+                let submitBtn = this.shadowRoot.getElementById('loginSubmit');
+                let spinner = this.shadowRoot.getElementById('spinner');
+                let ironForm = this.shadowRoot.getElementById('ironForm');
+                let errMsg = this.shadowRoot.getElementById('err-msg');
+
+                spinner.style.display = "none";
+
+                this.$.ironForm.addEventListener('iron-form-submit', function () {
+                    console.log("--- iron form submit --- ");
+
+                    spinner.active = true;
+                    spinner.style.display = "block";
+
+                    this._submitted = true;
+                }.bind(this));
+
+                this.$.ironForm.addEventListener('iron-form-presubmit', function () {
+                    console.log("--- iron form presubmit --- ");
+                    this._presubmitted = true;
+                }.bind(this));
+
+                this.$.ironForm.addEventListener('iron-form-response', function (e) {
+                    console.log("--- iron form response --- ");
+                    console.log(e.detail.__data.response);
+
+
+                    if (e.detail.__data.response.valid) {
+                        spinner.active = false;
+                        spinner.style.display = "none";
+                        errMsg.innerHTML = "";
+                    } else {
+                        errMsg.innerHTML = "Wrong username or password!";
+                    }
+                }.bind(this));
+
+
+                ironForm.addEventListener('keyup', function (event) {
+                    console.log("---- form keyup -----");
+
+                    // Validate the entire form to see if we should enable the `Submit` button.
+                    if (ironForm.validate()) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove("disabled");
+                    } else {
+                        submitBtn.disabled = true;
+                    }
+                });
+
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+
+            }
+
+
+            _submit(e) {
+
+                let spinner = this.shadowRoot.getElementById('spinner');
+
+                this.$.ironForm.submit();
+
+            }
+
+        }
+
+        window.customElements.define(PaperLogin.is, PaperLogin);
+    </script>
+</dom-module>

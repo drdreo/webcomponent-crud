@@ -14,10 +14,10 @@
         <express-app port="[[port]]">
             <express-config callback="[[staticMW]]"></express-config>
             <express-config callback="[[bodyParserMW]]"></express-config>
-            <!--<express-middleware callback="[[dbMW]]"></express-middleware>-->
             <express-router path="/">
                 <express-middleware method="get" path="/" callback="[[indexHandler]]"></express-middleware>
                 <express-middleware method="get" path="/user" callback="[[userHandler]]"></express-middleware>
+                <express-middleware method="get" path="/login" callback="[[loginHandler]]"></express-middleware>
             </express-router>
             <api-router></api-router>
             <db-router></db-router>
@@ -52,10 +52,6 @@
 
             }
 
-//            dbMW(req, res, next) {
-//                req.db = db;
-//                next();
-//            }
 
             indexHandler(req, res) {
                 res.sendFile(path.resolve('./client/user.html'));
@@ -63,7 +59,10 @@
 
             userHandler(req, res) {
                 res.sendFile(path.resolve('./client/user.html'));
+            }
 
+            loginHandler(req, res) {
+                res.sendFile(path.resolve('./client/login.html'));
             }
 
         }

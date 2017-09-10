@@ -4,14 +4,15 @@
   "description": "This project is the practical work to my bachlor thesis.",
   "scripts": {
     "setup": "npm install bower && bower install && xvfb-run electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html",
-    "dev": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html",
-    "dev-window": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html --window"
+    "start": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html",
+    "start-w": "electron --enable-logging node_modules/scram-engine/main.js --entry-file server/index.html --window"
   },
   "license": "MIT",
   "engines": {
     "node": "8.0.0"
   },
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
     "express-web-components": "^0.5.4",
     "mongodb": "^2.2.31",
