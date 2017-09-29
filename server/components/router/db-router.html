@@ -2,6 +2,11 @@
 <link rel="import" href="../../../node_modules/express-web-components/express-middleware.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-router.html">
 
+<link rel="import" href="./../db-query.html">
+<link rel="import" href="./../db-find.html">
+<link rel="import" href="./../db-limit.html">
+
+
 <script rel="import" src="../models/users.js"></script>
 
 
@@ -9,17 +14,20 @@
     <template>
         <express-router path="/db">
             <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
-
             <express-middleware method="get" path="/user-list" callback="[[userListHandler]]"></express-middleware>
             <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
         </express-router>
+
+        <db-query id="dbQuery">
+            <db-find query="{ name: 'Hugo', empty: 'false'}"></db-find>
+            <db-limit limit="10"></db-limit>
+        </db-query>
     </template>
 
     <script>
 
-        //        import * as UsersModel from "../models/users";
-
         class DBRouter extends Polymer.Element {
+
             static get is() {
                 return 'db-router';
             }
@@ -28,11 +36,45 @@
                 super();
 
                 this.port = process.env.PORT || 5000;
+
+
             }
 
+            connectedCallback() {
+                super.connectedCallback();
 
-            // GET db user list. //
+                setTimeout(() => {
+                    this.testDbQuery();
+                }, 5000);
+            }
+
+            ready() {
+                super.ready();
+                // When possible, use afterNextRender to defer non-critical
+                // work until after first paint.
+                Polymer.RenderStatus.afterNextRender(this, function () {
+                });
+
+                console.dir(this.$);
+            }
+
+            testDbQuery() {
+                console.dir(this.$.dbQuery.execute());
+            }
+
+            // GET db user list. // THIS is not accessable in middleware callback but in class methods only
             userListHandler(req, res) {
+
+                // START query component
+
+//                console.log(Polymer.dom(this.root).querySelectorAll("#dbQuery"));
+//                console.log(document.querySelector('db-query'));
+//                console.log(this.shadowRoot.querySelector('#dbQuery'));
+//                console.log(this.$.dbQuery);
+//                this.testDbQuery();
+
+
+                // END  query component
                 console.log("DB handler for user list");
                 console.log(req.query.sort);
 
@@ -118,6 +160,8 @@
             }
         }
 
-        Polymer(DBRouter);
+        //        Polymer(DBRouter);
+
+        customElements.define(DBRouter.is, DBRouter);
     </script>
 </dom-module>

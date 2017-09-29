@@ -15,7 +15,6 @@
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
     "express-web-components": "^0.5.4",
-    "mongodb": "^2.2.31",
     "mongoose": "^4.11.10",
     "scram-engine": "^0.6.17"
   },

@@ -3,6 +3,7 @@
 
 <dom-module id="client-app">
     <template>
+
         <iron-ajax id="ironAjax1" url="[[domain]]api/running-since" method="get"
                    on-response="handleRunningSince"></iron-ajax>
         <iron-ajax id="ironAjax2" url="[[domain]]api/source-code" method="get" on-response="handleSourceCode"
@@ -10,7 +11,8 @@
         <iron-ajax id="ironAjaxCat" url="[[domain]]api/cat-photo" method="get" on-response="handleCat"
                    handle-as="blob"></iron-ajax>
         <iron-ajax id="dbTest" url="[[domain]]api/db" method="get" on-response="handleDB" handle-as="json"></iron-ajax>
-        <iron-ajax id="test" url="[[domain]]api/cats" method="get" on-response="handleCats" handle-as="text"></iron-ajax>
+        <iron-ajax id="test" url="[[domain]]api/cats" method="get" on-response="handleCats"
+                   handle-as="text"></iron-ajax>
 
         <div>This page was served up from a headless Electron instance managed by Dokku. The server is written with <a
                 href="https://github.com/scramjs/express-web-components" target="_blank">Express Web Components</a>.
@@ -91,7 +93,7 @@
             }
 
             handleCats(e) {
-               //console.log(e.detail.response);
+                //console.log(e.detail.response);
                 this.hideSourcePre = false;
                 //this.serverSource = e.detail.response;
             }

@@ -1,0 +1,24 @@
+<script>
+    class DbLimit extends HTMLElement {
+        constructor() {
+            super();
+
+            this.limit = null;
+        }
+
+        static get observedAttributes() {
+            return ['limit'];
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            switch (name) {
+                case 'limit': {
+                    this.limit = newValue;
+                    break;
+                }
+            }
+        }
+    }
+
+    window.customElements.define('db-limit', DbLimit);
+</script>

@@ -3,9 +3,9 @@
 <link rel="import" href="../../../node_modules/express-web-components/express-middleware.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-config.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-router.html">
-
+<!--Server Config-->
 <script rel="import" src="server-config.js"></script>
-
+<!--DB Routes-->
 <link rel="import" href="../router/api-router.html">
 <link rel="import" href="../router/db-router.html">
 
@@ -21,7 +21,6 @@
             </express-router>
             <api-router></api-router>
             <db-router></db-router>
-
         </express-app>
     </template>
 
@@ -35,8 +34,9 @@
                 super();
 
                 this.port = process.env.PORT || 5000;
-                this.bodyParserJsonMW = bodyParser.json();
-                this.bodyParserUrlMW = bodyParser.urlencoded({extended: false});
+                this.test = "TESTER";
+//                this.bodyParserJsonMW = bodyParser.json();
+//                this.bodyParserUrlMW = bodyParser.urlencoded({extended: false});
             }
 
             staticMW(app, express) {
@@ -51,7 +51,6 @@
                 }));
 
             }
-
 
             indexHandler(req, res) {
                 res.sendFile(path.resolve('./client/user.html'));

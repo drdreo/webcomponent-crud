@@ -1,0 +1,54 @@
+<script>
+    class DbQuery extends HTMLElement {
+
+        constructor() {
+            super();
+
+            this._children = [];
+            this.findQuery = null;
+            this.limit = null;
+
+            this._children = Array.from(this.shadowRoot ? this.shadowRoot.children : this.children);
+
+
+            // iterate through db children and set query parameters
+            this._children.forEach((child) => {
+
+                console.dir(child);
+
+                // db-find element, get query attribute
+                if (child.nodeName === "DB-FIND" && child.hasAttribute("query")) {
+                    this.findQuery = child.getAttribute("query");
+                }
+                // db-limit element, get limit attribute
+                if (child.nodeName === "DB-LIMIT" && child.hasAttribute("limit")) {
+                    this.limit = child.getAttribute("limit");
+                }
+            });
+
+
+            this.buildQuery();
+        }
+
+        static get observedAttributes() {
+            return [];
+        }
+
+
+        connectedCallback() {
+
+            this.textContent = this.query;
+        }
+
+
+        buildQuery() {
+            this.query = this.findQuery + this.limit;
+        }
+
+        execute(){
+            console.log(this.query);
+        }
+    }
+
+    window.customElements.define('db-query', DbQuery);
+</script>

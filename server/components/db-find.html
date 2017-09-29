@@ -1,0 +1,25 @@
+<script>
+    class DbFind extends HTMLElement {
+        constructor() {
+            super();
+
+            this.query = null;
+
+        }
+
+        static get observedAttributes() {
+            return ['query'];
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            switch (name) {
+                case 'query': {
+                    this.query = newValue;
+                    break;
+                }
+            }
+        }
+    }
+
+    window.customElements.define('db-find', DbFind);
+</script>
