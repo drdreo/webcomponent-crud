@@ -1,43 +1,56 @@
 <script>
+
     class DbQuery extends HTMLElement {
 
         constructor() {
             super();
 
+            this.model = null;
+
             this._children = [];
-            this.findQuery = null;
+            this.findQuery = {};
             this.limit = null;
+            this.sort = {};
 
             this._children = Array.from(this.shadowRoot ? this.shadowRoot.children : this.children);
+            this.initChildren();
 
+            this.buildQuery();
+        }
+
+        static get observedAttributes() {
+            return ['model'];
+        }
+
+        // Respond to attribute changes.
+        attributeChangedCallback(attr, oldValue, newValue) {
+            if (attr === 'model') {
+                this.model = newValue;
+            }
+        }
+
+        connectedCallback() {
+
+            this.textContent = this.query;
+        }
+
+        initChildren() {
 
             // iterate through db children and set query parameters
             this._children.forEach((child) => {
 
                 console.dir(child);
 
-                // db-find element, get query attribute
-                if (child.nodeName === "DB-FIND" && child.hasAttribute("query")) {
-                    this.findQuery = child.getAttribute("query");
+
+                // db-find element, get query attribute, check if the attribute has value
+                if (child.nodeName === "DB-FIND" && child.hasAttribute("query") && child.getAttribute("query")) {
+                    this.findQuery = JSON.parse(child.getAttribute("query"));
                 }
                 // db-limit element, get limit attribute
                 if (child.nodeName === "DB-LIMIT" && child.hasAttribute("limit")) {
                     this.limit = child.getAttribute("limit");
                 }
             });
-
-
-            this.buildQuery();
-        }
-
-        static get observedAttributes() {
-            return [];
-        }
-
-
-        connectedCallback() {
-
-            this.textContent = this.query;
         }
 
 
@@ -45,8 +58,17 @@
             this.query = this.findQuery + this.limit;
         }
 
-        execute(){
-            console.log(this.query);
+        execute(callback) {
+
+            const find = this.findQuery;
+            const limit = parseInt(this.limit);
+
+            console.log(this.model);
+
+
+            this.model.find(find).limit(limit).exec(function (err, results) {
+                callback(err, results);
+            });
         }
     }
 

@@ -14,13 +14,13 @@
     <template>
         <express-router path="/db">
             <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
-            <express-middleware method="get" path="/user-list" callback="[[userListHandler]]"></express-middleware>
+            <express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>
             <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
         </express-router>
 
-        <db-query id="dbQuery">
-            <db-find query="{ name: 'Hugo', empty: 'false'}"></db-find>
-            <db-limit limit="10"></db-limit>
+        <db-query id="dbQuery" model="[[userModel]]">
+            <db-find query='{"username":"Test1","email": "test@gmx.at"}'></db-find>
+            <db-limit limit="0"></db-limit>
         </db-query>
     </template>
 
@@ -35,17 +35,14 @@
             constructor() {
                 super();
 
-                this.port = process.env.PORT || 5000;
-
-
             }
 
             connectedCallback() {
                 super.connectedCallback();
 
-                setTimeout(() => {
-                    this.testDbQuery();
-                }, 5000);
+//                setTimeout(() => {
+//                    this.testDbQuery();
+//                }, 5000);
             }
 
             ready() {
@@ -56,23 +53,32 @@
                 });
 
                 console.dir(this.$);
+
+                this.userListMW = (req, res) => {
+                    this.testDbQuery(req, res);
+                };
+
+                this.query = '{"name":"Test"}';
+                this.userModel = UsersModel;
             }
 
-            testDbQuery() {
-                console.dir(this.$.dbQuery.execute());
+            testDbQuery(req, res) {
+                /* querySelector cant access the components functions, returns undefined*/
+                console.dir(this.shadowRoot.querySelector('#dbQuery'));
+                /* need get element by id to access function  */
+                this.shadowRoot.getElementById("dbQuery").execute(function (err, users) {
+                    console.log("Query did it yayaaaaaay");
+                    res.json({success: true, users: users});
+                });
+
             }
+
 
             // GET db user list. // THIS is not accessable in middleware callback but in class methods only
             userListHandler(req, res) {
 
                 // START query component
-
-//                console.log(Polymer.dom(this.root).querySelectorAll("#dbQuery"));
-//                console.log(document.querySelector('db-query'));
-//                console.log(this.shadowRoot.querySelector('#dbQuery'));
-//                console.log(this.$.dbQuery);
-//                this.testDbQuery();
-
+//                this.testDbQuery(req, res);
 
                 // END  query component
                 console.log("DB handler for user list");
@@ -160,7 +166,6 @@
             }
         }
 
-        //        Polymer(DBRouter);
 
         customElements.define(DBRouter.is, DBRouter);
     </script>
