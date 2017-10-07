@@ -5,47 +5,51 @@
         constructor() {
             super();
 
-            this.model = null;
+            this.dbModel = null;
 
             this._children = [];
             this.findQuery = {};
             this.limit = null;
             this.sort = {};
 
-            this._children = Array.from(this.shadowRoot ? this.shadowRoot.children : this.children);
-            this.initChildren();
 
-            this.buildQuery();
         }
 
         static get observedAttributes() {
-            return ['model'];
+            return ['db-model'];
         }
 
         // Respond to attribute changes.
         attributeChangedCallback(attr, oldValue, newValue) {
-            if (attr === 'model') {
-                this.model = newValue;
+            if (attr === 'db-model') {
+                this.dbModel = newValue;
             }
         }
 
         connectedCallback() {
+            this._children = Array.from(this.shadowRoot ? this.shadowRoot.children : this.children);
 
-            this.textContent = this.query;
+            this.initChildren();
         }
 
         initChildren() {
 
             // iterate through db children and set query parameters
             this._children.forEach((child) => {
-
                 console.dir(child);
 
-
                 // db-find element, get query attribute, check if the attribute has value
-                if (child.nodeName === "DB-FIND" && child.hasAttribute("query") && child.getAttribute("query")) {
-                    this.findQuery = JSON.parse(child.getAttribute("query"));
+                if (child.nodeName === "DB-FIND") {
+
+                    console.log(child.findQuery);
+                    // string JSON query
+                    if (child.getAttribute("findQuery") && child.hasAttribute("findQuery")) {
+                        this.findQuery = JSON.parse(child.getAttribute("findQuery"));
+                    } else if (child.findQuery) {
+                        this.findQuery = child.findQuery;
+                    }
                 }
+
                 // db-limit element, get limit attribute
                 if (child.nodeName === "DB-LIMIT" && child.hasAttribute("limit")) {
                     this.limit = child.getAttribute("limit");
@@ -55,7 +59,7 @@
 
 
         buildQuery() {
-            this.query = this.findQuery + this.limit;
+            this.initChildren();
         }
 
         execute(callback) {
@@ -63,10 +67,7 @@
             const find = this.findQuery;
             const limit = parseInt(this.limit);
 
-            console.log(this.model);
-
-
-            this.model.find(find).limit(limit).exec(function (err, results) {
+            this.dbModel.find(find).limit(limit).exec(function (err, results) {
                 callback(err, results);
             });
         }

@@ -3,6 +3,7 @@
 <link rel="import" href="../../../node_modules/express-web-components/express-middleware.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-config.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-router.html">
+<!--<link rel="import" href="../../../node_modules/express-web-components/express-route.html">-->
 
 <!--Server Config-->
 <script rel="import" src="server-config.js"></script>
@@ -18,8 +19,11 @@
             <express-middleware callback="[[bodyParserUrlMW]]"></express-middleware>
             <express-router path="/">
                 <express-middleware method="get" path="/" callback="[[indexHandler]]"></express-middleware>
-                <express-middleware method="get" path="/user" callback="[[userHandler]]"></express-middleware>
                 <express-middleware method="get" path="/login" callback="[[loginHandler]]"></express-middleware>
+            </express-router>
+            <express-router path="/user">
+                <express-middleware method="get" path="/list" callback="[[userListHandler]]"></express-middleware>
+                <express-middleware method="get" path="/create" callback="[[userCreateHandler]]"></express-middleware>
             </express-router>
             <api-router></api-router>
             <db-router></db-router>
@@ -56,13 +60,20 @@
                 app.use(express.static('client'));
             }
 
-
             indexHandler(req, res) {
                 res.sendFile(path.resolve('./client/user.html'));
             }
 
             userHandler(req, res) {
                 res.sendFile(path.resolve('./client/user.html'));
+            }
+
+            userListHandler(req, res) {
+                res.sendFile(path.resolve('./client/userlist.html'));
+            }
+
+            userCreateHandler(req, res) {
+                res.sendFile(path.resolve('./client/usercreate.html'));
             }
 
             loginHandler(req, res) {

@@ -14,13 +14,15 @@
     <template>
         <express-router path="/db">
             <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
+            <!--{{}} needed because of 2 way binding for the this reference-->
             <express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>
             <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
         </express-router>
 
-        <db-query id="dbQuery" model="[[userModel]]">
-            <db-find query='{"username":"Test1","email": "test@gmx.at"}'></db-find>
-            <db-limit limit="0"></db-limit>
+        <db-query id="dbQuery" db-model="[[userModel]]">
+            <db-find find-query="[[query]]" static='{"username":"Test1"}' test="{{query}}"></db-find>
+            <!--'{"username":"Test1","email": "test@gmx.at"}'-->
+            <db-limit limit="10"></db-limit>
         </db-query>
     </template>
 
@@ -34,15 +36,10 @@
 
             constructor() {
                 super();
-
             }
 
             connectedCallback() {
                 super.connectedCallback();
-
-//                setTimeout(() => {
-//                    this.testDbQuery();
-//                }, 5000);
             }
 
             ready() {
@@ -52,14 +49,15 @@
                 Polymer.RenderStatus.afterNextRender(this, function () {
                 });
 
-                console.dir(this.$);
-
                 this.userListMW = (req, res) => {
                     this.testDbQuery(req, res);
                 };
+                this.query = {};
+                this.query["username"] = "Test";
 
-                this.query = '{"name":"Test"}';
                 this.userModel = UsersModel;
+
+                console.dir(this.$);
             }
 
             testDbQuery(req, res) {
@@ -74,7 +72,7 @@
             }
 
 
-            // GET db user list. // THIS is not accessable in middleware callback but in class methods only
+            // GET db user list.
             userListHandler(req, res) {
 
                 // START query component

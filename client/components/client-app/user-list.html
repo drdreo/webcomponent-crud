@@ -1,0 +1,84 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api-column.html">
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api.html">
+
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+
+
+<dom-module id="user-list">
+    <template>
+        <iron-ajax id="ajax_getusers" url="../db/user-list?sort=[[sortProperty]]" method="GET"
+                   on-response="_handleGetUsers" handleAs="json"></iron-ajax>
+
+        <div class="card-content">
+            <paper-datatable-api data="[[users]]" on-sort="_handleSort"
+                                 on-filter="_handleFilter">
+                <paper-datatable-api-column header="Username" filter sortable property="username">
+                    <template>
+                        <span>{{value}}</span>
+                    </template>
+                </paper-datatable-api-column>
+                <paper-datatable-api-column header="Email" filter sortable property="email">
+                    <template>
+                        <span>{{value}}</span>
+                    </template>
+                </paper-datatable-api-column>
+            </paper-datatable-api>
+        </div>
+
+    </template>
+
+    <script>
+
+
+        class UserList extends Polymer.Element {
+            static get is() {
+                return 'user-list';
+            }
+
+            constructor() {
+                super();
+
+                this.users = null;
+            }
+
+            ready() {
+                super.ready();
+
+                this.getUsers();
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+            }
+
+            getUsers() {
+                this.shadowRoot.querySelector('#ajax_getusers').generateRequest();
+            }
+
+
+            _handleGetUsers(response) {
+                console.log(response.detail.response);
+                this.users = response.detail.response.users;
+            }
+
+            _handleSort(event) {
+                this.sortProperty = event.detail.sort.property + ',' + event.detail.sort.direction;
+
+                this.getUsers();
+            }
+
+            _handleFilter(event) {
+                let filter = event.detail.filter.value;
+                let column = event.detail.filter.property;
+
+                console.log(filter);
+            }
+        }
+
+        customElements.define("user-list", UserList);
+
+    </script>
+</dom-module>

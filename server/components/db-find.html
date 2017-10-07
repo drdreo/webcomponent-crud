@@ -3,18 +3,18 @@
         constructor() {
             super();
 
-            this.query = null;
-
+            this.findQuery = null;
         }
 
         static get observedAttributes() {
-            return ['query'];
+            return ['find-query'];
         }
 
         attributeChangedCallback(name, oldValue, newValue) {
             switch (name) {
-                case 'query': {
-                    this.query = newValue;
+                case 'find-query': {
+                    this.findQuery = newValue;
+                    console.log(newValue);
                     break;
                 }
             }
