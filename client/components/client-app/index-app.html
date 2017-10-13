@@ -1,0 +1,61 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="index-app">
+    <template>
+
+        <iron-ajax id="runningSinceAjax" url="[[domain]]db/running-since" method="get"
+                   on-response="handleRunningSince" handle-as="json"></iron-ajax>
+        <iron-ajax id="userCountAjax" url="[[domain]]db/user-cnt" method="get" on-response="userCountHandler"
+                   handle-as="json"></iron-ajax>
+
+
+        <div>DB running since: [[runningSince]]</div>
+        <br>
+        <div>Users stored: [[userCount]]</div>
+
+    </template>
+
+    <script>
+        class IndexApp extends Polymer.Element {
+            static get is() {
+                return 'index-app';
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+
+
+                this.userCount = 0;
+                this.domain = getDomain();
+
+//                this.shadowRoot.querySelector('#runningSinceAjax').generateRequest();
+                this.shadowRoot.querySelector('#userCountAjax').generateRequest();
+
+
+                function getDomain() {
+                    if (window.location.hostname === 'localhost') {
+                        return window.location.href;
+                    }
+                    else {
+                        return 'http://< production-url >.com/';
+                    }
+                }
+            }
+
+
+            handleRunningSince(e) {
+                this.runningSince = e.detail.response;
+            }
+
+            userCountHandler(e) {
+
+                this.userCount = e.detail.response.cnt;
+            }
+
+
+        }
+
+        customElements.define("index-app", IndexApp);
+    </script>
+</dom-module>

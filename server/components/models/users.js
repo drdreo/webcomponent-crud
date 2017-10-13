@@ -79,6 +79,20 @@ module.exports.addUser = (newUser, callback) => {
     newUser.save(callback);
 };
 
+//runningSince,  getting the date since the db is up and running.
+module.exports.usersCount = (callback) => {
+    UsersModel.count({}, function (err, cnt) {
+        callback(err, cnt);
+    })
+};
+
+//runningSince,  getting the date since the db is up and running.
+module.exports.runningSinceDate = (callback) => {
+    UsersModel.collection.serverStatus(function (err, res) {
+        callback(err, res);
+    })
+};
+
 //Here we need to pass an id parameter to Model.remove
 module.exports.deleteUserById = (id, callback) => {
     let query = {_id: id};
@@ -106,8 +120,13 @@ module.exports.validateUser = (username, password, callback) => {
         if (user) {
             user.comparePassword(password, function (err, isMatch) {
 
-                console.log('Passwords  match:', isMatch);
-                callback(err, isMatch);
+                console.log('Passwords  match:' + isMatch);
+                if (isMatch) {
+                    callback(err, user);
+                }
+                else {
+                    callback(err, false);
+                }
             });
         } else {
             callback(err, false);

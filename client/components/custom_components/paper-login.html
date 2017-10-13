@@ -46,8 +46,9 @@
                 @apply(--paper-font-caption);
 
             }
-            #spinner{
-                margin-right:5px;
+
+            #spinner {
+                margin-right: 5px;
             }
         </style>
 
@@ -86,7 +87,8 @@
 
             static get properties() {
                 return {
-                    loginUrl: String
+                    loginUrl: String,
+                    redirectTo: String
                 }
             }
 
@@ -124,16 +126,16 @@
 
                 this.$.ironForm.addEventListener('iron-form-response', function (e) {
                     console.log("--- iron form response --- ");
-                    console.log(e.detail.__data.response);
 
-
-                    if (e.detail.__data.response.valid) {
-                        spinner.active = false;
-                        spinner.style.display = "none";
+                    if (e.detail.__data.response.hasOwnProperty("valid") && e.detail.__data.response.valid == true) {
                         errMsg.innerHTML = "";
+                        window.location.replace(this.redirectTo);
                     } else {
                         errMsg.innerHTML = "Wrong username or password!";
                     }
+
+                    spinner.active = false;
+                    spinner.style.display = "none";
                 }.bind(this));
 
 
@@ -153,7 +155,6 @@
 
             connectedCallback() {
                 super.connectedCallback();
-
             }
 
 
@@ -162,7 +163,6 @@
                 let spinner = this.shadowRoot.getElementById('spinner');
 
                 this.$.ironForm.submit();
-
             }
 
         }

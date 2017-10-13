@@ -95,7 +95,11 @@
                     <!-- Two way binding to the selected property has been removed due to polymer/issues/4405 -->
                     <paper-listbox
                             selected="_subData.page"
-                            attr-for-selected="name">
+                            attr-for-selected="name"
+                            on-iron-activate="_drawerSelected">
+                        <paper-item name="home">
+                            <a href="/" name="name">Home</a>
+                        </paper-item>
                         <paper-item name="list">
                             <a href="/user/list" name="name">List</a>
                         </paper-item>
@@ -103,7 +107,7 @@
                             <a href="/user/new" name="name">Create</a>
                         </paper-item>
                         <paper-item name="edit">
-                            <a href="/user/edit" name="name">Edit</a>
+                            <a href="/user/details" name="name">Details</a>
                         </paper-item>
                         <paper-item name="logout">
                             <a href="/logout" name="name">Logout</a>
@@ -147,13 +151,17 @@
                 return 'app-layout';
             }
 
+            _drawerSelected(e) {
+                location.reload();
+            }
+
             connectedCallback() {
                 super.connectedCallback();
 
                 console.log(this._route);
-                console.log(this._subRoute);
                 console.log(this._pageData);
-                console.log(this._subData);
+                console.log(this._subRoute);
+                console.log(this._selectedPage);
             }
 
             ready() {

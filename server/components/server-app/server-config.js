@@ -1,5 +1,9 @@
 const path = require('path');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+
+const session = require('express-session');
+
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise; // to get rid of deprecation warning
 mongoose.set("debug", true);

@@ -21,12 +21,11 @@
         <h2>Add User</h2>
 
         <iron-form id="eventsDemo">
-            <form method="POST" action="db/new-user" id="form" enctype="application/x-www-form-urlencoded">
+            <form method="POST" action="../db/new-user" id="form" enctype="application/x-www-form-urlencoded">
                 <paper-input label="Username" name="username" required auto-validate
-                             error-message="needs some text!"></paper-input>
-                <paper-input label="Password" name="password" type="password" required auto-validate char-counter
-                             maxlength="10"></paper-input>
-                <paper-checkbox required>You must check this box</paper-checkbox>
+                             error-message="Invalid username!"></paper-input>
+                <paper-input label="Password" name="password" error-message="Invalid password!" type="password" required auto-validate char-counter
+                             minlength="6" maxlength="20"></paper-input>
                 <paper-input label="email" id="inputWithButton" name="email">
                     <iron-icon icon="mail" slot="prefix"></iron-icon>
                     <div slot="suffix">@email.com</div>
@@ -35,11 +34,11 @@
                     </paper-icon-button>
                 </paper-input>
                 <br>
-                <paper-button raised disabled on-click="_do" id="eventsDemoSubmit">
+                <paper-button raised disabled on-click="_submit" id="eventsDemoSubmit">
                     <paper-spinner id="spinner"></paper-spinner>
                     Submit
                 </paper-button>
-                <paper-button raised on-click="_reset">Reset</paper-button>
+
                 <div class="output"></div>
             </form>
         </iron-form>
@@ -65,17 +64,17 @@
 
                 /* form functions*/
                 let eventsDemoSubmit = this.shadowRoot.getElementById('eventsDemoSubmit');
+                let eventsDemo = this.shadowRoot.getElementById('eventsDemo');
                 let spinner = this.shadowRoot.getElementById('spinner');
 
                 this.$.eventsDemo.addEventListener('iron-form-submit', function () {
                     console.log("--- iron form submit --- ");
 
-//                    this.querySelector('.output').innerHTML = JSON.stringify(event.detail);
                     spinner.active = false;
                     spinner.hidden = true;
                     eventsDemoSubmit.disabled = false;
-
                     this._submitted = true;
+
                 }.bind(this));
 
                 this.$.eventsDemo.addEventListener('iron-form-presubmit', function () {
@@ -89,7 +88,6 @@
                     console.log(this._presubmitted);
                 }.bind(this));
 
-                let eventsDemo = this.shadowRoot.getElementById('eventsDemo');
                 eventsDemo.addEventListener('change', function (event) {
                     console.log("---- form changed -----");
 
@@ -99,7 +97,7 @@
 
             }
 
-            _do() {
+            _submit() {
                 let spinner = this.shadowRoot.getElementById('spinner');
 
                 spinner.active = true;
@@ -109,20 +107,6 @@
 
             connectedCallback() {
                 super.connectedCallback();
-
-                this.users = null;
-
-            }
-
-            getUsers() {
-                this.shadowRoot.querySelector('#ajax_getusers').generateRequest();
-            }
-
-
-            static _reset() {
-                console.log("reset");
-
-                this.$.eventsDemo.reset();
             }
         }
 

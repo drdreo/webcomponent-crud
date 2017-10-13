@@ -17,6 +17,11 @@
             <!--{{}} needed because of 2 way binding for the this reference-->
             <express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>
             <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
+
+            <express-middleware method="get" path="/running-since"
+                                callback="[[runningSinceHandler]]"></express-middleware>
+            <express-middleware method="get" path="/user-cnt"
+                                callback="[[userCountHandler]]"></express-middleware>
         </express-router>
 
         <db-query id="dbQuery" db-model="[[userModel]]">
@@ -152,15 +157,65 @@
                 var username = req.body.username;
                 var password = req.body.password;
 
-                UsersModel.validateUser(username, password, (err, valid) => {
+
+                UsersModel.validateUser(username, password, (err, user) => {
                     if (err) {
                         res.json({success: false, valid: false, message: `Failed to validate user. Error: ${err}`});
                     }
                     else {
-                        res.json({success: true, valid: valid, message: "User validated."});
-                        // TODO: set userToken in localStorage or session if valid
+
+                        if (!user) {
+
+                            res.json({
+                                success: true,
+                                valid: false,
+                                message: "Invalid username or password"
+                            });
+
+                        } else {
+                            req.session.user = user;
+
+                            res.json({success: true, valid: true});
+                        }
                     }
                 });
+            }
+
+
+            //returns the date since the db is running and up
+            runningSinceHandler(req, res) {
+
+                console.log("db-router running since handler");
+
+
+                UsersModel.runningSinceDate((err, date) => {
+
+                    console.log(err);
+                    console.log(date);
+                    if (err) {
+                        res.json({success: false, message: `Failed to get running-since data. Error: ${err}`});
+
+                    }
+                    else
+                        res.json({success: true, date: date});
+                });
+
+            }
+
+            //returns the date since the db is running and up
+            userCountHandler(req, res) {
+
+                console.log("db-router user count handler");
+
+                UsersModel.usersCount((err, cnt) => {
+                        if (err)
+                            res.json({success: false, message: `Failed to get users count. Error: ${err}`});
+                        else
+                            res.json({success: true, cnt: cnt});
+
+                    }
+                );
+
             }
         }
 

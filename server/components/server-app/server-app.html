@@ -3,30 +3,38 @@
 <link rel="import" href="../../../node_modules/express-web-components/express-middleware.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-config.html">
 <link rel="import" href="../../../node_modules/express-web-components/express-router.html">
-<!--<link rel="import" href="../../../node_modules/express-web-components/express-route.html">-->
 
 <!--Server Config-->
 <script rel="import" src="server-config.js"></script>
 <!--DB Routes-->
-<link rel="import" href="../router/api-router.html">
 <link rel="import" href="../router/db-router.html">
 
 <dom-module id="server-app">
     <template>
         <express-app port="[[port]]">
             <express-config callback="[[staticMW]]"></express-config>
+
             <express-middleware callback="[[bodyParserMW]]"></express-middleware>
             <express-middleware callback="[[bodyParserUrlMW]]"></express-middleware>
+            <express-middleware callback="[[cookieParserMW]]"></express-middleware>
+            <express-middleware callback="[[sessionMW]]"></express-middleware>
+
+            <express-config callback="[[cookieMW]]"></express-config>
+
+
             <express-router path="/">
                 <express-middleware method="get" path="/" callback="[[indexHandler]]"></express-middleware>
                 <express-middleware method="get" path="/login" callback="[[loginHandler]]"></express-middleware>
+                <express-middleware method="get" path="/logout" callback="[[logoutHandler]]"></express-middleware>
             </express-router>
             <express-router path="/user">
                 <express-middleware method="get" path="/list" callback="[[userListHandler]]"></express-middleware>
-                <express-middleware method="get" path="/create" callback="[[userCreateHandler]]"></express-middleware>
+                <express-middleware method="get" path="/new" callback="[[userCreateHandler]]"></express-middleware>
+                <express-middleware method="get" path="/details" callback="[[userDetailsHandler]]"></express-middleware>
             </express-router>
-            <api-router></api-router>
             <db-router></db-router>
+
+            <express-middleware callback="[[undefinedPageMW]]"></express-middleware>
         </express-app>
     </template>
 
@@ -42,7 +50,33 @@
 
                 this.port = 5000;
                 this.bodyParserMW = bodyParser.json();
-                this.bodyParserUrlMW = bodyParser.urlencoded({extended: false});
+                // initialize body-parser to parse incoming parameters requests to req.body
+                this.bodyParserUrlMW = bodyParser.urlencoded({extended: true});
+                // initialize cookie-parser to allow us access the cookies stored in the browser.
+                this.cookieParserMW = cookieParser();
+                // initialize express-session to allow us track the logged-in user across sessions.
+                this.sessionMW = session({
+                    key: 'user_sid',
+                    secret: 'somerandonstuffs',
+                    resave: false,
+                    saveUninitialized: false,
+                    cookie: {
+                        expires: 600000
+                    }
+                });
+
+
+                this.userCreateHandler = (req, res) => {
+                    this.sessionChecker(req, res, this.sendUserCreateSite);
+                };
+
+                this.userListHandler = (req, res) => {
+                    this.sessionChecker(req, res, this.sendUserListSite);
+                };
+
+                this.userDetailsHandler = (req, res) => {
+                    this.sessionChecker(req, res, this.sendUserDetailsSite);
+                };
 
             }
 
@@ -56,28 +90,77 @@
 
 
             staticMW(app, express) {
-                console.log("static");
                 app.use(express.static('client'));
             }
 
+            // This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
+            // This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
+            cookieMW(app, express) {
+                app.use((req, res, next) => {
+                    if (req.cookies.user_sid && !req.session.user) {
+                        res.clearCookie('user_sid');
+                    }
+                    next();
+                });
+            }
+
+            // middleware function to check for logged-in users
+            sessionChecker(req, res, callback) {
+
+//                req.session.user = {"username": "Tester"};
+
+                if (!req.session.user && !req.cookies.user_sid) {
+                    console.log("redirect -> login!");
+                    res.redirect('/login');
+                } else {
+                    callback(res);
+                }
+            }
+
+
             indexHandler(req, res) {
-                res.sendFile(path.resolve('./client/user.html'));
+                console.log("index Handler");
+                res.sendFile(path.resolve('./client/index.html'));
             }
 
-            userHandler(req, res) {
-                res.sendFile(path.resolve('./client/user.html'));
+            sendUserDetailsSite(res) {
+                console.log("Sent user details site");
+                res.sendFile(path.resolve('./client/usercreate.html'))
             }
 
-            userListHandler(req, res) {
-                res.sendFile(path.resolve('./client/userlist.html'));
+            sendUserCreateSite(res) {
+                console.log("Sent user create site");
+                res.sendFile(path.resolve('./client/usercreate.html'))
             }
 
-            userCreateHandler(req, res) {
-                res.sendFile(path.resolve('./client/usercreate.html'));
+            sendUserListSite(res) {
+                console.log("Sent user list site");
+                res.sendFile(path.resolve('./client/userlist.html'))
             }
+
 
             loginHandler(req, res) {
-                res.sendFile(path.resolve('./client/login.html'));
+
+                if (req.session.user && req.cookies.user_sid) {
+                    res.clearCookie('user_sid');
+                    res.redirect('/');
+                } else {
+                    console.log("Sent login site");
+                    res.sendFile(path.resolve('./client/login.html'));
+                }
+            }
+
+            logoutHandler(req, res) {
+                if (req.session.user && req.cookies.user_sid) {
+                    res.clearCookie('user_sid');
+                    res.redirect('/');
+                } else {
+                    res.redirect('/login');
+                }
+            }
+
+            undefinedPageMW(req, res) {
+                res.status(404).send("Sorry can't find that!")
             }
 
         }
@@ -86,24 +169,3 @@
 
     </script>
 </dom-module>
-
-
-<!--<dom-module id="app-component">-->
-<!--<template>-->
-<!--<express-app port="3000">-->
-<!--<express-config callback="[[paramCallback]]"></express-config>-->
-<!--<express-app-param name="collectionName" callback="[[paramCallback]]"></express-app-param>-->
-<!--<express-middleware callback="[[bodyParserMW]]"></express-middleware>-->
-<!--<express-middleware callback="[[bodyParserURLEncodedMW]]"></express-middleware>-->
-<!--<express-middleware callback="[[loggerMW]]"></express-middleware>-->
-<!--<express-middleware method="get" path="/" callback="[[getIndex]]"></express-middleware>-->
-<!--<express-middleware method="get" path="/collections/:collectionName" callback="[[getCollection]]"></express-middleware>-->
-<!--<express-middleware method="post" path="/collections/:collectionName" callback="[[postCollection]]"></express-middleware>-->
-<!--<express-middleware method="get" path="/collections/:collectionName/:id" callback="[[getCollectionEntity]]"></express-middleware>-->
-<!--<express-middleware method="put" path="/collections/:collectionName/:id" callback="[[putCollectionEntity]]"></express-middleware>-->
-<!--<express-middleware method="delete" path="/collections/:collectionName/:id" callback="[[deleteCollectionEntity]]"></express-middleware>-->
-<!--</express-app>-->
-<!--</template>-->
-
-<!--<script src="server.component.ts"></script>-->
-<!--</dom-module>-->
