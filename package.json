@@ -15,6 +15,7 @@
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
+    "express-list-endpoints": "^3.0.0",
     "express-session": "^1.15.6",
     "express-web-components": "^0.5.4",
     "mongoose": "^4.11.10",

@@ -13,15 +13,31 @@
 <dom-module id="db-router">
     <template>
         <express-router path="/db">
-            <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
-            <!--{{}} needed because of 2 way binding for the this reference-->
-            <express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>
-            <express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>
 
-            <express-middleware method="get" path="/running-since"
-                                callback="[[runningSinceHandler]]"></express-middleware>
-            <express-middleware method="get" path="/user-cnt"
-                                callback="[[userCountHandler]]"></express-middleware>
+            <express-router path="/">
+                <express-middleware method="get" path="/user/list" callback="{{userListMW}}"></express-middleware>
+                <express-middleware method="get" path="/user/:id"
+                                    callback="[[userDetailsHandler]]"></express-middleware>
+                <express-middleware method="post" path="/user/:id"
+                                    callback="[[userUpdateHandler]]"></express-middleware>
+                <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
+                <express-middleware method="post" path="/user" callback="[[newUserHandler]]"></express-middleware>
+                <express-middleware method="get" path="/running-since"
+                                    callback="[[runningSinceHandler]]"></express-middleware>
+                <express-middleware method="get" path="/user/cnt"
+                                    callback="[[userCountHandler]]"></express-middleware>
+            </express-router>
+
+            <!--<express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>-->
+            <!--{{}} needed because of 2 way binding for the this reference-->
+            <!--<express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>-->
+            <!--<express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>-->
+
+
+            <!--<express-middleware method="get" path="/running-since"-->
+            <!--callback="[[runningSinceHandler]]"></express-middleware>-->
+            <!--<express-middleware method="get" path="/user-cnt"-->
+            <!--callback="[[userCountHandler]]"></express-middleware>-->
         </express-router>
 
         <db-query id="dbQuery" db-model="[[userModel]]">
@@ -149,6 +165,47 @@
 
             }
 
+            // update existing user
+            userUpdateHandler(req, res) {
+
+                const userID = req.params.id;
+
+                // Get our form values. These rely on the "name" attributes
+                // create new User and call function addUser from the users model
+                let user = new UsersModel({
+                    username: req.body.username,
+                    email: req.body.email,
+                    password: req.body.password
+                });
+
+                UsersModel.updateUser(userID, user, (err, result) => {
+                    if (err) {
+                        res.json({success: false, message: `Failed to upadate the user. Error: ${err}`});
+
+                    }
+                    else
+                        res.json({success: true, message: "User updated successfully."});
+                });
+            }
+
+            //get user details
+            userDetailsHandler(req, res) {
+
+                const userID = req.params.id;
+
+                console.log("db-router user details handler");
+
+                UsersModel.getUserByID(userID, (err, user) => {
+                    if (err) {
+                        res.json({success: false, message: `Failed to create a new user. Error: ${err}`});
+
+                    }
+                    else
+                        res.json({success: true, user: user});
+                });
+
+            }
+
             //check login
             loginHandler(req, res) {
 
@@ -165,16 +222,13 @@
                     else {
 
                         if (!user) {
-
                             res.json({
                                 success: true,
                                 valid: false,
                                 message: "Invalid username or password"
                             });
-
                         } else {
-                            req.session.user = user;
-
+                            req.session.user = user; // set users session variable
                             res.json({success: true, valid: true});
                         }
                     }

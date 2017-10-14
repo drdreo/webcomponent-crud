@@ -17,26 +17,39 @@
 
 <dom-module id="user-create">
     <template>
+        <style is="custom-style">
+            .text-error {
+                color: #db4437;
+                text-align: center;
+                @apply(--paper-font-caption);
+
+            }
+        </style>
 
         <h2>Add User</h2>
 
+        <div class="text-error">
+            <span id="err-msg"></span>
+        </div>
+
         <iron-form id="eventsDemo">
-            <form method="POST" action="../db/new-user" id="form" enctype="application/x-www-form-urlencoded">
+            <form method="POST" action="../db/user" id="form" enctype="application/x-www-form-urlencoded">
                 <paper-input label="Username" name="username" required auto-validate
-                             error-message="Invalid username!"></paper-input>
-                <paper-input label="Password" name="password" error-message="Invalid password!" type="password" required auto-validate char-counter
-                             minlength="6" maxlength="20"></paper-input>
-                <paper-input label="email" id="inputWithButton" name="email">
+                             error-message="Invalid username!">
+                    <iron-icon icon="account-circle" slot="prefix"></iron-icon>
+                </paper-input>
+                <paper-input label="Password" name="password" error-message="Invalid password!" type="password" required
+                             auto-validate char-counter
+                             minlength="6" maxlength="20">
+                    <iron-icon icon="lock" slot="prefix"></iron-icon>
+                </paper-input>
+                <paper-input label="email" name="email">
                     <iron-icon icon="mail" slot="prefix"></iron-icon>
-                    <div slot="suffix">@email.com</div>
-                    <paper-icon-button slot="suffix" onclick="function clearInput(){}" icon="clear" alt="clear"
-                                       title="clear">
-                    </paper-icon-button>
                 </paper-input>
                 <br>
                 <paper-button raised disabled on-click="_submit" id="eventsDemoSubmit">
                     <paper-spinner id="spinner"></paper-spinner>
-                    Submit
+                    Create
                 </paper-button>
 
                 <div class="output"></div>
@@ -55,8 +68,6 @@
 
             constructor() {
                 super();
-                this._submitted = false;
-                this._presubmitted = false;
             }
 
             ready() {
@@ -66,6 +77,7 @@
                 let eventsDemoSubmit = this.shadowRoot.getElementById('eventsDemoSubmit');
                 let eventsDemo = this.shadowRoot.getElementById('eventsDemo');
                 let spinner = this.shadowRoot.getElementById('spinner');
+                let errMsg = this.shadowRoot.getElementById('err-msg');
 
                 this.$.eventsDemo.addEventListener('iron-form-submit', function () {
                     console.log("--- iron form submit --- ");
@@ -73,19 +85,16 @@
                     spinner.active = false;
                     spinner.hidden = true;
                     eventsDemoSubmit.disabled = false;
-                    this._submitted = true;
-
                 }.bind(this));
 
-                this.$.eventsDemo.addEventListener('iron-form-presubmit', function () {
-                    console.log("--- iron form presubmit --- ");
-                    this._presubmitted = true;
-                }.bind(this));
-
-                this.$.eventsDemo.addEventListener('iron-form-response', function () {
+                this.$.eventsDemo.addEventListener('iron-form-response', function (e) {
                     console.log("--- iron form response --- ");
-                    console.log(this._submitted);
-                    console.log(this._presubmitted);
+                    if (e.detail.__data.response.hasOwnProperty("valid") && e.detail.__data.response.valid == true) {
+
+                        window.location.replace("/user/list");
+                    } else {
+                        errMsg.innerHTML = e.detail.__data.response.message;
+                    }
                 }.bind(this));
 
                 eventsDemo.addEventListener('change', function (event) {

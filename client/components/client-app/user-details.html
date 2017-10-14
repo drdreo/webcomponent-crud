@@ -1,0 +1,156 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api-column.html">
+<link rel="import" href="../../bower_components/paper-datatable-api/paper-datatable-api.html">
+
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+
+
+<dom-module id="user-details">
+    <template>
+
+        <iron-ajax auto id="getUserDetailsAjax" url="../db/user/{{id}}" method="GET"
+                   on-response="_handleUserDetails" handleAs="json"></iron-ajax>
+
+        <app-location route="{{_route}}"></app-location>
+        <app-route
+                route="{{_route}}"
+                pattern="/:id"
+                data="{{_pageData}}"
+                tail="{{_subRoute}}"></app-route>
+        <app-route
+                route="{{_subRoute}}"
+                pattern="/:id"
+                data="{{_subData}}"></app-route>
+
+        <h2>User [[user.username]]</h2>
+
+        <iron-form id="updateUserForm">
+            <form method="POST" action="../db/user/{{id}}" id="form" enctype="application/x-www-form-urlencoded">
+                <paper-input label="Username" name="username" required auto-validate
+                             error-message="Invalid username!" value="{{user.username}}">
+                    <iron-icon icon="account-circle" slot="prefix"></iron-icon>
+                </paper-input>
+                <paper-input id="password" label="Password" name="password" error-message="Invalid password!"
+                             type="password" required
+                             auto-validate char-counter value="{{user.password}}"
+                             minlength="6" maxlength="20">
+                    <iron-icon icon="lock" slot="prefix" on-click="togglePwd" id="pwdIcon"></iron-icon>
+                </paper-input>
+                <paper-input label="email" name="email" value="{{user.email}}">
+                    <iron-icon icon="mail" slot="prefix"></iron-icon>
+                </paper-input>
+                <br>
+                <paper-button raised disabled on-click="_submit" id="updateUserSubmit">
+                    <paper-spinner id="spinner"></paper-spinner>
+                    Update
+                </paper-button>
+            </form>
+        </iron-form>
+
+    </template>
+
+    <script>
+
+        class UserDetails extends Polymer.Element {
+            static get is() {
+                return 'user-details';
+            }
+
+            constructor() {
+                super();
+
+                this._route = null;
+                this._pageData = null;
+                this._subData = null;
+
+                this._subRoute = null;
+                this._selectedPage = null;
+
+                this.id = null;
+                this.user = null;
+
+            }
+
+            ready() {
+                super.ready();
+
+                // get user id from URL
+                this.id = this._subData.id;
+
+                /* form functions*/
+                let updateUserSubmit = this.shadowRoot.getElementById('updateUserSubmit');
+                let updateUserForm = this.shadowRoot.getElementById('updateUserForm');
+                let spinner = this.shadowRoot.getElementById('spinner');
+
+                this.$.updateUserForm.addEventListener('iron-form-submit', function () {
+                    console.log("--- iron form submit --- ");
+
+                    spinner.active = false;
+                    spinner.hidden = true;
+                    updateUserSubmit.disabled = false;
+                }.bind(this));
+
+                this.$.updateUserForm.addEventListener('iron-form-response', function () {
+                    console.log("--- iron form response --- ");
+
+                }.bind(this));
+
+                updateUserForm.addEventListener('change', function (event) {
+                    console.log("---- form changed -----");
+
+                    // Validate the entire form to see if we should enable the `Submit` button.
+                    updateUserSubmit.disabled = !updateUserForm.validate();
+                });
+
+            }
+
+            _submit() {
+                let spinner = this.shadowRoot.getElementById('spinner');
+
+                spinner.active = true;
+                spinner.hidden = false;
+                this.$.updateUserForm.submit();
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+            }
+
+
+            // ajax call to retrieve users details
+            _handleUserDetails(response) {
+
+                if (response.detail.response.success) {
+                    this.user = response.detail.response.user;
+                    this.shadowRoot.getElementById('updateUserSubmit').disabled = !this.shadowRoot.getElementById('updateUserForm').validate();
+                }
+            }
+
+            togglePwd() {
+
+                if (this.shadowRoot.getElementById('password').getAttribute("type") === "password") {
+                    this.shadowRoot.getElementById('password').setAttribute("type", "text");
+                }
+                else {
+                    this.shadowRoot.getElementById('password').setAttribute("type", "password");
+                }
+            }
+
+        }
+
+        customElements.define("user-details", UserDetails);
+
+    </script>
+</dom-module>

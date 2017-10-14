@@ -2,6 +2,8 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
+const listEndpoints = require('express-list-endpoints');
+
 const session = require('express-session');
 
 const mongoose = require('mongoose');

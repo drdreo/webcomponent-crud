@@ -21,7 +21,6 @@
 
             <express-config callback="[[cookieMW]]"></express-config>
 
-
             <express-router path="/">
                 <express-middleware method="get" path="/" callback="[[indexHandler]]"></express-middleware>
                 <express-middleware method="get" path="/login" callback="[[loginHandler]]"></express-middleware>
@@ -30,11 +29,14 @@
             <express-router path="/user">
                 <express-middleware method="get" path="/list" callback="[[userListHandler]]"></express-middleware>
                 <express-middleware method="get" path="/new" callback="[[userCreateHandler]]"></express-middleware>
-                <express-middleware method="get" path="/details" callback="[[userDetailsHandler]]"></express-middleware>
+                <express-middleware method="get" path="/:id" callback="[[userDetailsHandler]]"></express-middleware>
             </express-router>
+
             <db-router></db-router>
 
             <express-middleware callback="[[undefinedPageMW]]"></express-middleware>
+
+            <express-config callback="[[handleEndpoint]]"></express-config>
         </express-app>
     </template>
 
@@ -93,6 +95,10 @@
                 app.use(express.static('client'));
             }
 
+            handleEndpoint(app, express) {
+                console.log(listEndpoints(app));
+            }
+
             // This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
             // This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
             cookieMW(app, express) {
@@ -113,7 +119,7 @@
                     console.log("redirect -> login!");
                     res.redirect('/login');
                 } else {
-                    callback(res);
+                    callback(req, res);
                 }
             }
 
@@ -123,17 +129,23 @@
                 res.sendFile(path.resolve('./client/index.html'));
             }
 
-            sendUserDetailsSite(res) {
+            sendUserDetailsSite(req, res) {
                 console.log("Sent user details site");
-                res.sendFile(path.resolve('./client/usercreate.html'))
+
+                // if no valid param is given, id must be numeric
+                if (!isNaN(req.params.id)) {
+                    res.sendFile(path.resolve('./client/userdetails.html'))
+                } else {
+                    res.redirect('/');
+                }
             }
 
-            sendUserCreateSite(res) {
+            sendUserCreateSite(req, res) {
                 console.log("Sent user create site");
                 res.sendFile(path.resolve('./client/usercreate.html'))
             }
 
-            sendUserListSite(res) {
+            sendUserListSite(req, res) {
                 console.log("Sent user list site");
                 res.sendFile(path.resolve('./client/userlist.html'))
             }

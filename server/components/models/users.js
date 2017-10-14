@@ -36,6 +36,8 @@ userSchema.set("collection", "users");
 userSchema.pre('save', function (next) {
     let user = this;
 
+
+    console.log("is modified ? = " + user.isModified('password'));
     // only hash the password if it has been modified (or is new)
     if (!user.isModified('password')) return next();
 
@@ -47,6 +49,7 @@ userSchema.pre('save', function (next) {
         bcrypt.hash(user.password, salt, null, function (err, hash) {
             if (err) return next(err);
 
+            console.log("pwd overwritten with hashed! ");
             // override the cleartext password with the hashed one
             user.password = hash;
             next();
@@ -56,6 +59,7 @@ userSchema.pre('save', function (next) {
 
 userSchema.methods.comparePassword = function (candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+        console.log("password match ? = " + isMatch);
         cb(err, isMatch);
     });
 };
@@ -79,6 +83,20 @@ module.exports.addUser = (newUser, callback) => {
     newUser.save(callback);
 };
 
+
+//newUser.save is used to insert the document into MongoDB
+module.exports.updateUser = (number, user, callback) => {
+    UsersModel.findOne({number: Number(number)}, function (err, doc) {
+        doc.username = user.username;
+        doc.email = user.email;
+        doc.password = user.password;
+        doc.save();
+
+        callback(err, doc);
+    });
+
+};
+
 //runningSince,  getting the date since the db is up and running.
 module.exports.usersCount = (callback) => {
     UsersModel.count({}, function (err, cnt) {
@@ -100,7 +118,7 @@ module.exports.deleteUserById = (id, callback) => {
 };
 
 //Here we need to pass an id parameter to Model.remove
-module.exports.getUserByUsername = (username, password, callback) => {
+module.exports.getUserByUsername = (username, callback) => {
     let query = {
         username: {$regex: username}
     };
@@ -110,6 +128,16 @@ module.exports.getUserByUsername = (username, password, callback) => {
         callback(err, result);
     });
     console.log("done getting username");
+};
+
+//Here we need to pass an id parameter to Model.remove
+module.exports.getUserByID = (id, callback) => {
+
+    UsersModel.findOne({'number': Number(id)}, '', function (err, user) {
+        // test a matching password
+        callback(err, user);
+    });
+    console.log("done getting user by id ");
 };
 
 // fetch user and test password verification
