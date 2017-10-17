@@ -1,0 +1,25 @@
+<script>
+    class DbSave extends HTMLElement {
+        constructor() {
+            super();
+            console.log("save-constructor");
+            this.save = null;
+        }
+
+        static get observedAttributes() {
+            return ['save'];
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            switch (name) {
+                case 'save': {
+                    this.saveQuery = newValue;
+                    console.log(newValue);
+                    break;
+                }
+            }
+        }
+    }
+
+    window.customElements.define('db-save', DbSave);
+</script>

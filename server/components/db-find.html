@@ -3,7 +3,7 @@
         constructor() {
             super();
 
-            this.findQuery = null;
+            this.findQuery = {};
         }
 
         static get observedAttributes() {
@@ -14,10 +14,13 @@
             switch (name) {
                 case 'find-query': {
                     this.findQuery = newValue;
-                    console.log(newValue);
                     break;
                 }
             }
+        }
+
+        connectedCallback() {
+//            console.log(this.findQuery);
         }
     }
 

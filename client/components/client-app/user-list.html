@@ -15,9 +15,9 @@
         <div class="card-content">
             <paper-datatable-api data="[[users]]" on-sort="_handleSort"
                                  on-filter="_handleFilter">
-                <paper-datatable-api-column header="ID" filter sortable property="number">
+                <paper-datatable-api-column header="ID" sortable property="number">
                     <template>
-                        <span>{{value}}</span>
+                        <a href="./[[value]]"><span on-click="_linkReload">{{value}}</span></a>
                     </template>
                 </paper-datatable-api-column>
                 <paper-datatable-api-column header="Username" filter sortable property="username">
@@ -47,6 +47,7 @@
                 super();
 
                 this.users = null;
+
             }
 
             ready() {
@@ -63,6 +64,9 @@
                 this.shadowRoot.querySelector('#ajax_getusers').generateRequest();
             }
 
+            _linkReload() {
+                location.reload();
+            }
 
             _handleGetUsers(response) {
                 this.users = response.detail.response.users;

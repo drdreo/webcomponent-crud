@@ -19,6 +19,7 @@
     "express-session": "^1.15.6",
     "express-web-components": "^0.5.4",
     "mongoose": "^4.11.10",
+    "mongoose-auto-increment": "^5.0.1",
     "scram-engine": "^0.6.17"
   },
   "devDependencies": {}

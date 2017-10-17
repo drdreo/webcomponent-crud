@@ -63,7 +63,8 @@
                     resave: false,
                     saveUninitialized: false,
                     cookie: {
-                        expires: 600000
+                        expires: new Date(Date.now() + 3600000),
+                        maxAge: 3600000
                     }
                 });
 

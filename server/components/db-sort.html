@@ -1,0 +1,35 @@
+<script>
+    class DbSort extends HTMLElement {
+
+        constructor() {
+            super();
+            console.log("sort-constructor");
+
+            this.sortQuery = {};
+        }
+
+        static get observedAttributes() {
+            return ['sort-property', 'sort-direction', 'sort-query'];
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            switch (name) {
+                case 'sort-property':
+                    this.property = newValue;
+                    break;
+                case 'sort-direction':
+                    this.direction = newValue;
+                    break;
+                case 'sort-query':
+                    this.sortQuery = newValue;
+                    break;
+
+            }
+
+            console.log("name: " + name + " value: " + newValue);
+        }
+
+    }
+
+    customElements.define('db-sort', DbSort);
+</script>

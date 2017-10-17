@@ -1,17 +1,20 @@
 <script>
-
     class DbQuery extends HTMLElement {
 
         constructor() {
             super();
+            console.log("db-query constructor");
 
             this.dbModel = null;
 
             this._children = [];
             this.findQuery = {};
+            this.sortQuery = {};
             this.limit = null;
-            this.sort = {};
 
+            this.save = {};
+
+            this.queryType = "";
 
         }
 
@@ -29,6 +32,9 @@
         connectedCallback() {
             this._children = Array.from(this.shadowRoot ? this.shadowRoot.children : this.children);
 
+            console.dir(this.children);
+
+
             this.initChildren();
         }
 
@@ -41,12 +47,34 @@
                 // db-find element, get query attribute, check if the attribute has value
                 if (child.nodeName === "DB-FIND") {
 
-                    console.log(child.findQuery);
+                    console.dir(child.findQuery);
                     // string JSON query
-                    if (child.getAttribute("findQuery") && child.hasAttribute("findQuery")) {
-                        this.findQuery = JSON.parse(child.getAttribute("findQuery"));
-                    } else if (child.findQuery) {
+                    if (child.hasAttribute("find-query") && child.getAttribute("find-query")) {
+                        this.findQuery = JSON.parse(child.getAttribute("find-query"));
+                    }
+                    else if (child.findQuery)  // JSON object query
+                    {
                         this.findQuery = child.findQuery;
+                    }
+
+                    this.queryType = "find";
+                }
+
+                // db-sort element, get query attribute, check if the attribute has value
+                if (child.nodeName === "DB-SORT") {
+
+                    console.log("sort direction:" + child.getAttribute("sort-direction"));
+                    console.log("sort query:" + child.getAttribute("sort-query"));
+                    console.log("sort query2:" + child.sort2Query);
+
+
+                    // string JSON query
+                    if (child.hasAttribute("sort-query") && child.getAttribute("sort-query")) {
+                        this.sortQuery = JSON.parse(child.getAttribute("sort-query"));
+                    }
+                    else if (child.sortQuery)  // JSON object query
+                    {
+                        this.sortQuery = child.sortQuery;
                     }
                 }
 
@@ -54,9 +82,30 @@
                 if (child.nodeName === "DB-LIMIT" && child.hasAttribute("limit")) {
                     this.limit = child.getAttribute("limit");
                 }
+
+                // db-save element, get save object
+                if (child.nodeName === "DB-SAVE") {
+                    if (child.hasAttribute("save")) {
+                        this.save = child.getAttribute("save");
+                    } else if (child.save) {
+                        this.save = child.save;
+                    }
+
+                    this.queryType = "save";
+                }
+
+
+                console.log(Object.keys(Object.keys(this.sortQuery).length));
+                console.log(Object.keys(Object.keys(this.save).length));
+
+                // IF both, find & save, are set, it's supposed to update the found one
+                if (Object.keys(this.sortQuery).length !== 0 && this.sortQuery.constructor === Object && Object.keys(this.save).length !== 0 && this.save.constructor === Object) {
+                    this.queryType = "update";
+                }
+
+
             });
         }
-
 
         buildQuery() {
             this.initChildren();
@@ -64,12 +113,46 @@
 
         execute(callback) {
 
-            const find = this.findQuery;
-            const limit = parseInt(this.limit);
+            console.log("Executing Query ...");
+            // TODO: keep query params always up to date
+            this.initChildren();
 
-            this.dbModel.find(find).limit(limit).exec(function (err, results) {
-                callback(err, results);
-            });
+            const find = this.findQuery;
+            const limit = (this.limit) ? parseInt(this.limit) : 0; // check if limit is set
+            const sort = this.sortQuery;
+
+            switch (this.queryType) {
+                case "find":
+                    this.dbModel.find(find).sort(sort).limit(limit).exec(function (err, results) {
+                        callback(err, results);
+                    });
+                    break;
+                case "save":
+                    this.save.save(function (err, results) {
+                        callback(err, results);
+                    });
+                    break;
+                case "update":
+                    this.dbModel.findOne(find).exec(function (err, doc) {
+                        doc.username = user.username;
+                        doc.email = user.email;
+                        doc.password = user.password;
+
+                        for (let property in this.save) {
+                            if (this.save.hasOwnProperty(property)) {
+                                doc[property] = this.save[property];
+                            }
+                        }
+                        doc.save();
+
+                        callback(err, doc);
+                    });
+                    break;
+                case "delete":
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

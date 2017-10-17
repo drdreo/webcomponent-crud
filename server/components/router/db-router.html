@@ -4,47 +4,50 @@
 
 <link rel="import" href="./../db-query.html">
 <link rel="import" href="./../db-find.html">
+<link rel="import" href="./../db-sort.html">
+<link rel="import" href="./../db-save.html">
 <link rel="import" href="./../db-limit.html">
 
 
 <script rel="import" src="../models/users.js"></script>
-
 
 <dom-module id="db-router">
     <template>
         <express-router path="/db">
 
             <express-router path="/">
-                <express-middleware method="get" path="/user/list" callback="{{userListMW}}"></express-middleware>
+                <express-middleware method="get" path="/user/list" callback="{{listUsersMW}}"></express-middleware>
                 <express-middleware method="get" path="/user/:id"
                                     callback="[[userDetailsHandler]]"></express-middleware>
                 <express-middleware method="post" path="/user/:id"
-                                    callback="[[userUpdateHandler]]"></express-middleware>
+                                    callback="{{updateUserMW}}"></express-middleware>
                 <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
-                <express-middleware method="post" path="/user" callback="[[newUserHandler]]"></express-middleware>
+                <express-middleware method="post" path="/user" callback="{{newUserMW}}"></express-middleware>
                 <express-middleware method="get" path="/running-since"
                                     callback="[[runningSinceHandler]]"></express-middleware>
                 <express-middleware method="get" path="/user/cnt"
                                     callback="[[userCountHandler]]"></express-middleware>
             </express-router>
 
-            <!--<express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>-->
-            <!--{{}} needed because of 2 way binding for the this reference-->
-            <!--<express-middleware method="get" path="/user-list" callback="{{userListMW}}"></express-middleware>-->
-            <!--<express-middleware method="post" path="/new-user" callback="[[newUserHandler]]"></express-middleware>-->
-
-
-            <!--<express-middleware method="get" path="/running-since"-->
-            <!--callback="[[runningSinceHandler]]"></express-middleware>-->
-            <!--<express-middleware method="get" path="/user-cnt"-->
-            <!--callback="[[userCountHandler]]"></express-middleware>-->
         </express-router>
 
-        <db-query id="dbQuery" db-model="[[userModel]]">
-            <db-find find-query="[[query]]" static='{"username":"Test1"}' test="{{query}}"></db-find>
-            <!--'{"username":"Test1","email": "test@gmx.at"}'-->
-            <db-limit limit="10"></db-limit>
+        <db-query id="queryListUsers" db-model="[[userModel]]">
+            <db-find></db-find>
+            <!--find-query="[[query]]"-->
+            <db-sort sort2-query="{{_sort}}" sort-query="[[_sort]]" sort-property="username"
+                     sort-direction="asc"></db-sort>
         </db-query>
+
+        <db-query id="querySaveUser" db-model="[[userModel]]">
+            <db-save save="[[newUser]]"></db-save>
+        </db-query>
+
+        <db-query id="queryUpdateUser" db-model="[[userModel]]">
+            <db-find find-query="[[findUserQuery]]"></db-find>
+            <db-save save="[[updateUser]]"></db-save>
+        </db-query>
+
+
     </template>
 
     <script>
@@ -57,6 +60,16 @@
 
             constructor() {
                 super();
+                console.log("db-router constructor");
+
+                this.newUser = {};
+                this.updateUser = {};
+                this.findUserQuery = {};
+
+                this._sort = {};
+                this._sort["number"] = 1;
+
+                this.userModel = UsersModel;
             }
 
             connectedCallback() {
@@ -65,54 +78,42 @@
 
             ready() {
                 super.ready();
+                console.log("db-router ready");
+
                 // When possible, use afterNextRender to defer non-critical
                 // work until after first paint.
                 Polymer.RenderStatus.afterNextRender(this, function () {
+                    console.log("db-router afterNextRender");
+
                 });
 
-                this.userListMW = (req, res) => {
-                    this.testDbQuery(req, res);
+                this.listUsersMW = (req, res) => {
+                    this.queryUserList(req, res);
                 };
-                this.query = {};
-                this.query["username"] = "Test";
 
-                this.userModel = UsersModel;
+                this.newUserMW = (req, res) => {
+                    this.queryNewUser(req, res);
+                };
+
+                this.updateUserMW = (req, res) => {
+                    this.queryUpdateUser(req, res);
+                };
+
 
                 console.dir(this.$);
             }
 
-            testDbQuery(req, res) {
-                /* querySelector cant access the components functions, returns undefined*/
-                console.dir(this.shadowRoot.querySelector('#dbQuery'));
-                /* need get element by id to access function  */
-                this.shadowRoot.getElementById("dbQuery").execute(function (err, users) {
-                    console.log("Query did it yayaaaaaay");
-                    res.json({success: true, users: users});
-                });
-
-            }
-
-
-            // GET db user list.
-            userListHandler(req, res) {
-
-                // START query component
-//                this.testDbQuery(req, res);
-
-                // END  query component
-                console.log("DB handler for user list");
-                console.log(req.query.sort);
-
+//          Get all Users from DB
+            queryUserList(req, res) {
 
                 let order = -1;
                 let _column = 'username';
 
                 /*
                  * req.query contains all GET Parameters
-                 * via query.<parameter> the parameter is accessed
+                 * via query.<parameter> is it accessed
                  *
-                 * --get the sort parameter--
-                 *
+                 * --get the sort parameter and format it--
                  */
                 if (req.query.sort !== "") {
                     let arr = req.query.sort.split(","); //sort ex.: "username,asc"
@@ -121,44 +122,39 @@
                         order = 1;
                 }
 
-                let _sort = {[_column]: order};
+                this._sort = {[_column]: order};
                 if (_column == "undefined") {
-                    _sort = {};
+                    this._sort = {};
                 }
 
-
-                UsersModel.getAllUsers(_sort, (err, users) => {
+                /* Execute the DB-Query-Component  */
+                this.shadowRoot.getElementById("queryListUsers").execute(function (err, users) {
                     if (err) {
-                        res.json({success: false, message: `Failed to load all lists. Error: ${err}`});
+                        res.json({success: false, message: `Failed to load List. Error: ${err}`});
                     }
-                    else {
-                        res.write(JSON.stringify({success: true, users: users}, null, 2));
-                        res.end();
-
-                    }
+                    else
+                        res.json({success: true, users: users});
                 });
-
-
             }
 
+
             //insert new user into db
-            newUserHandler(req, res) {
+            queryNewUser(req, res) {
 
                 console.log("db-router new USER handler");
 
-                // Get our form values. These rely on the "name" attributes
-                // create new User and call function addUser from the users model
-                let newUser = new UsersModel({
+                // Access the POST values from the body. Those rely on the "name" attributes in the iron-form.
+                // create new User
+                this.newUser = new UsersModel({
                     username: req.body.username,
                     email: req.body.email,
                     password: req.body.password
                 });
 
-                UsersModel.addUser(newUser, (err, result) => {
-                    if (err) {
+                /* Execute the DB-Query-Component  */
+                this.shadowRoot.getElementById("querySaveUser").execute(function (err, users) {
+                    if (err)
                         res.json({success: false, message: `Failed to create a new user. Error: ${err}`});
-
-                    }
                     else
                         res.json({success: true, message: "User added successfully."});
                 });
@@ -166,27 +162,50 @@
             }
 
             // update existing user
-            userUpdateHandler(req, res) {
+            queryUpdateUser(req, res) {
 
                 const userID = req.params.id;
 
+                this.findUserQuery["number"] = userID;
                 // Get our form values. These rely on the "name" attributes
                 // create new User and call function addUser from the users model
-                let user = new UsersModel({
+                this.updateUser = new UsersModel({
                     username: req.body.username,
                     email: req.body.email,
                     password: req.body.password
                 });
 
-                UsersModel.updateUser(userID, user, (err, result) => {
-                    if (err) {
-                        res.json({success: false, message: `Failed to upadate the user. Error: ${err}`});
-
-                    }
+                /* Execute the DB-Query-Component  */
+                this.shadowRoot.getElementById("queryUpdateUser").execute(function (err, users) {
+                    if (err)
+                        res.json({success: false, message: `Failed to updated user. Error: ${err}`});
                     else
                         res.json({success: true, message: "User updated successfully."});
                 });
             }
+
+            // update existing user
+//            userUpdateHandler(req, res) {
+//
+//                const userID = req.params.id;
+//
+//                // Get our form values. These rely on the "name" attributes
+//                // create new User and call function addUser from the users model
+//                let user = new UsersModel({
+//                    username: req.body.username,
+//                    email: req.body.email,
+//                    password: req.body.password
+//                });
+//
+//                UsersModel.updateUser(userID, user, (err, result) => {
+//                    if (err) {
+//                        res.json({success: false, message: `Failed to upadate the user. Error: ${err}`});
+//
+//                    }
+//                    else
+//                        res.json({success: true, message: "User updated successfully."});
+//                });
+//            }
 
             //get user details
             userDetailsHandler(req, res) {

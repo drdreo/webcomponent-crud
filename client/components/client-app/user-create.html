@@ -89,7 +89,10 @@
 
                 this.$.eventsDemo.addEventListener('iron-form-response', function (e) {
                     console.log("--- iron form response --- ");
-                    if (e.detail.__data.response.hasOwnProperty("valid") && e.detail.__data.response.valid == true) {
+
+                    console.log(e.detail.__data.response);
+
+                    if (e.detail.__data.response.hasOwnProperty("success") && e.detail.__data.response.success == true) {
 
                         window.location.replace("/user/list");
                     } else {

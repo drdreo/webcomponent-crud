@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt-nodejs');
 const SALT_WORK_FACTOR = 10;
 
 const userSchema = new Schema({
+        number: {
+            type: Number
+        },
         username: {
             type: String,
             required: true,
@@ -27,6 +30,8 @@ const userSchema = new Schema({
         collection: "users"
     }
 );
+
+userSchema.plugin(autoIncrement.plugin, {model: 'UserSchema', field: 'number'});
 
 
 //set collection here or in the model creation or in the schema creation
@@ -65,11 +70,12 @@ userSchema.methods.comparePassword = function (candidatePassword, cb) {
 };
 
 //first argument is a useless model name, 3rd is the actual collection name
-const UsersModel = module.exports = mongoose.model('UserSchema', userSchema, "users");
+// const UsersModel = module.exports = mongoose.model('UserSchema', userSchema, "users");
+const UsersModel = connection.model('UserSchema', userSchema);
 
 
 //Model.find() returns the collection
-module.exports.getAllUsers = (sort, callback) => {
+UsersModel.getAllUsers = (sort, callback) => {
     console.log("finding all users ...");
     UsersModel.find({}).sort(sort).exec(function (err, results) {
         //invoke callback with your mongoose returned result
@@ -79,13 +85,13 @@ module.exports.getAllUsers = (sort, callback) => {
 };
 
 //newUser.save is used to insert the document into MongoDB
-module.exports.addUser = (newUser, callback) => {
+UsersModel.addUser = (newUser, callback) => {
     newUser.save(callback);
 };
 
 
 //newUser.save is used to insert the document into MongoDB
-module.exports.updateUser = (number, user, callback) => {
+UsersModel.updateUser = (number, user, callback) => {
     UsersModel.findOne({number: Number(number)}, function (err, doc) {
         doc.username = user.username;
         doc.email = user.email;
@@ -98,27 +104,27 @@ module.exports.updateUser = (number, user, callback) => {
 };
 
 //runningSince,  getting the date since the db is up and running.
-module.exports.usersCount = (callback) => {
+UsersModel.usersCount = (callback) => {
     UsersModel.count({}, function (err, cnt) {
         callback(err, cnt);
     })
 };
 
 //runningSince,  getting the date since the db is up and running.
-module.exports.runningSinceDate = (callback) => {
+UsersModel.runningSinceDate = (callback) => {
     UsersModel.collection.serverStatus(function (err, res) {
         callback(err, res);
     })
 };
 
 //Here we need to pass an id parameter to Model.remove
-module.exports.deleteUserById = (id, callback) => {
+UsersModel.deleteUserById = (id, callback) => {
     let query = {_id: id};
     UsersModel.remove(query, callback);
 };
 
 //Here we need to pass an id parameter to Model.remove
-module.exports.getUserByUsername = (username, callback) => {
+UsersModel.getUserByUsername = (username, callback) => {
     let query = {
         username: {$regex: username}
     };
@@ -131,7 +137,7 @@ module.exports.getUserByUsername = (username, callback) => {
 };
 
 //Here we need to pass an id parameter to Model.remove
-module.exports.getUserByID = (id, callback) => {
+UsersModel.getUserByID = (id, callback) => {
 
     UsersModel.findOne({'number': Number(id)}, '', function (err, user) {
         // test a matching password
@@ -141,7 +147,7 @@ module.exports.getUserByID = (id, callback) => {
 };
 
 // fetch user and test password verification
-module.exports.validateUser = (username, password, callback) => {
+UsersModel.validateUser = (username, password, callback) => {
 
     UsersModel.findOne({username: username}, function (err, user) {
         // if user exists
