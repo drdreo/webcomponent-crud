@@ -7,6 +7,7 @@
 <link rel="import" href="./../db-sort.html">
 <link rel="import" href="./../db-save.html">
 <link rel="import" href="./../db-limit.html">
+<link rel="import" href="./../db-delete.html">
 
 
 <script rel="import" src="../models/users.js"></script>
@@ -18,9 +19,11 @@
             <express-router path="/">
                 <express-middleware method="get" path="/user/list" callback="{{listUsersMW}}"></express-middleware>
                 <express-middleware method="get" path="/user/:id"
-                                    callback="[[userDetailsHandler]]"></express-middleware>
+                                    callback="{{detailsUsersMW}}"></express-middleware>
                 <express-middleware method="post" path="/user/:id"
                                     callback="{{updateUserMW}}"></express-middleware>
+                <express-middleware method="delete" path="/user/:id"
+                                    callback="{{deleteUserMW}}"></express-middleware>
                 <express-middleware method="post" path="/login" callback="[[loginHandler]]"></express-middleware>
                 <express-middleware method="post" path="/user" callback="{{newUserMW}}"></express-middleware>
                 <express-middleware method="get" path="/running-since"
@@ -33,9 +36,12 @@
 
         <db-query id="queryListUsers" db-model="[[userModel]]">
             <db-find></db-find>
-            <!--find-query="[[query]]"-->
             <db-sort sort2-query="{{_sort}}" sort-query="[[_sort]]" sort-property="username"
                      sort-direction="asc"></db-sort>
+        </db-query>
+
+        <db-query id="queryUserDetails" db-model="[[userModel]]">
+            <db-find find-query="[[findUserQuery]]"></db-find>
         </db-query>
 
         <db-query id="querySaveUser" db-model="[[userModel]]">
@@ -45,6 +51,11 @@
         <db-query id="queryUpdateUser" db-model="[[userModel]]">
             <db-find find-query="[[findUserQuery]]"></db-find>
             <db-save save="[[updateUser]]"></db-save>
+        </db-query>
+
+        <db-query id="queryDeleteUser" db-model="[[userModel]]">
+            <db-find find-query="[[findUserQuery]]"></db-find>
+            <db-delete></db-delete>
         </db-query>
 
 
@@ -80,15 +91,12 @@
                 super.ready();
                 console.log("db-router ready");
 
-                // When possible, use afterNextRender to defer non-critical
-                // work until after first paint.
-                Polymer.RenderStatus.afterNextRender(this, function () {
-                    console.log("db-router afterNextRender");
-
-                });
-
                 this.listUsersMW = (req, res) => {
                     this.queryUserList(req, res);
+                };
+
+                this.detailsUsersMW = (req, res) => {
+                    this.queryUserDetails(req, res);
                 };
 
                 this.newUserMW = (req, res) => {
@@ -99,8 +107,9 @@
                     this.queryUpdateUser(req, res);
                 };
 
-
-                console.dir(this.$);
+                this.deleteUserMW = (req, res) => {
+                    this.queryDeleteUser(req, res);
+                };
             }
 
 //          Get all Users from DB
@@ -165,15 +174,17 @@
             queryUpdateUser(req, res) {
 
                 const userID = req.params.id;
-
                 this.findUserQuery["number"] = userID;
+
+                console.log("UPDATE requested for: " + userID);
+
                 // Get our form values. These rely on the "name" attributes
                 // create new User and call function addUser from the users model
-                this.updateUser = new UsersModel({
+                this.updateUser = {
                     username: req.body.username,
                     email: req.body.email,
                     password: req.body.password
-                });
+                };
 
                 /* Execute the DB-Query-Component  */
                 this.shadowRoot.getElementById("queryUpdateUser").execute(function (err, users) {
@@ -184,43 +195,40 @@
                 });
             }
 
-            // update existing user
-//            userUpdateHandler(req, res) {
-//
-//                const userID = req.params.id;
-//
-//                // Get our form values. These rely on the "name" attributes
-//                // create new User and call function addUser from the users model
-//                let user = new UsersModel({
-//                    username: req.body.username,
-//                    email: req.body.email,
-//                    password: req.body.password
-//                });
-//
-//                UsersModel.updateUser(userID, user, (err, result) => {
-//                    if (err) {
-//                        res.json({success: false, message: `Failed to upadate the user. Error: ${err}`});
-//
-//                    }
-//                    else
-//                        res.json({success: true, message: "User updated successfully."});
-//                });
-//            }
+            // delete existing user
+            queryDeleteUser(req, res) {
+
+                const userID = req.params.id;
+
+                console.log("DELETE USER requested for: " + userID);
+
+                this.findUserQuery["number"] = userID;
+
+                /* Execute the DB-Query-Component  */
+                this.shadowRoot.getElementById("queryDeleteUser").execute(function (err, user) {
+                    if (err)
+                        res.json({success: false, message: `Failed to delete user. Error: ${err}`});
+                    else
+                        res.json({success: true, message: "User deleted successfully."});
+                });
+            }
+
 
             //get user details
-            userDetailsHandler(req, res) {
+            queryUserDetails(req, res) {
 
                 const userID = req.params.id;
 
                 console.log("db-router user details handler");
 
-                UsersModel.getUserByID(userID, (err, user) => {
-                    if (err) {
-                        res.json({success: false, message: `Failed to create a new user. Error: ${err}`});
+                this.findUserQuery["number"] = userID;
 
-                    }
+                /* Execute the DB-Query-Component  */
+                this.shadowRoot.getElementById("queryUserDetails").execute(function (err, user) {
+                    if (err)
+                        res.json({success: false, message: `Failed to load user. Error: ${err}`});
                     else
-                        res.json({success: true, user: user});
+                        res.json({success: true, user: user[0]});
                 });
 
             }

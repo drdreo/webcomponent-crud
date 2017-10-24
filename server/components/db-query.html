@@ -11,7 +11,7 @@
             this.findQuery = {};
             this.sortQuery = {};
             this.limit = null;
-
+            this._delete = false;
             this.save = {};
 
             this.queryType = "";
@@ -83,6 +83,12 @@
                     this.limit = child.getAttribute("limit");
                 }
 
+                // db-limit element, get limit attribute
+                if (child.nodeName === "DB-DELETE") {
+                    this._delete = true;
+                    this.queryType = "delete";
+                }
+
                 // db-save element, get save object
                 if (child.nodeName === "DB-SAVE") {
                     if (child.hasAttribute("save")) {
@@ -95,12 +101,19 @@
                 }
 
 
-                console.log(Object.keys(Object.keys(this.sortQuery).length));
-                console.log(Object.keys(Object.keys(this.save).length));
+                console.log(this.save);
+                for (let property in this.save) {
+                    if (this.save.hasOwnProperty(property)) {
+                        console.log(this.save[property]);
+                    }
+                }
 
+                console.log(this.findQuery);
                 // IF both, find & save, are set, it's supposed to update the found one
-                if (Object.keys(this.sortQuery).length !== 0 && this.sortQuery.constructor === Object && Object.keys(this.save).length !== 0 && this.save.constructor === Object) {
+                //TODO: fix if some other components are used
+                if (Object.keys(this.findQuery).length !== 0 && this.findQuery.constructor === Object && Object.keys(this.save).length !== 0 && this.save.constructor === Object) {
                     this.queryType = "update";
+                    console.log("QUERY TYPE SET __________");
                 }
 
 
@@ -113,9 +126,11 @@
 
         execute(callback) {
 
-            console.log("Executing Query ...");
             // TODO: keep query params always up to date
             this.initChildren();
+
+            console.log("Executing Query type : " + this.queryType);
+
 
             const find = this.findQuery;
             const limit = (this.limit) ? parseInt(this.limit) : 0; // check if limit is set
@@ -133,22 +148,27 @@
                     });
                     break;
                 case "update":
-                    this.dbModel.findOne(find).exec(function (err, doc) {
-                        doc.username = user.username;
-                        doc.email = user.email;
-                        doc.password = user.password;
+                    this.dbModel.findOne(find).exec((err, doc) => {
+//                        doc.username = user.username;
+//                        doc.email = user.email;
+//                        doc.password = user.password;
 
+                        console.log(doc);
                         for (let property in this.save) {
                             if (this.save.hasOwnProperty(property)) {
                                 doc[property] = this.save[property];
                             }
                         }
-                        doc.save();
 
-                        callback(err, doc);
+                        doc.save(function (err, results) {
+                            callback(err, results);
+                        });
                     });
                     break;
                 case "delete":
+                    this.dbModel.remove(find).exec(function (err, doc) {
+                        callback(err, doc);
+                    });
                     break;
                 default:
                     break;

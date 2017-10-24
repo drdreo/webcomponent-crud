@@ -22,6 +22,8 @@
 
         <iron-ajax auto id="getUserDetailsAjax" url="../db/user/{{id}}" method="GET"
                    on-response="_handleUserDetails" handleAs="json"></iron-ajax>
+        <iron-ajax id="deleteUserAjax" url="../db/user/{{id}}" method="DELETE"
+                   on-response="_handleUserDelete" handleAs="json"></iron-ajax>
 
         <app-location route="{{_route}}"></app-location>
         <app-route
@@ -56,8 +58,12 @@
                     <paper-spinner id="spinner"></paper-spinner>
                     Update
                 </paper-button>
+                <paper-button raised on-click="_delete" id="deleteUserBtn">
+                    Delete
+                </paper-button>
             </form>
         </iron-form>
+
 
     </template>
 
@@ -105,6 +111,8 @@
                 this.$.updateUserForm.addEventListener('iron-form-response', function () {
                     console.log("--- iron form response --- ");
 
+                    // redirect to list page
+                    location.replace("../user/list");
                 }.bind(this));
 
                 updateUserForm.addEventListener('change', function (event) {
@@ -124,6 +132,11 @@
                 this.$.updateUserForm.submit();
             }
 
+            _delete() {
+
+                this.shadowRoot.getElementById('deleteUserAjax').generateRequest();
+            }
+
             connectedCallback() {
                 super.connectedCallback();
             }
@@ -132,9 +145,20 @@
             // ajax call to retrieve users details
             _handleUserDetails(response) {
 
+                console.log(response.detail.response);
                 if (response.detail.response.success) {
                     this.user = response.detail.response.user;
                     this.shadowRoot.getElementById('updateUserSubmit').disabled = !this.shadowRoot.getElementById('updateUserForm').validate();
+                }
+            }
+
+            // ajax call to retrieve users details
+            _handleUserDelete(response) {
+
+                console.log(response);
+
+                if (response.detail.response.success) {
+                    location.replace("../user/list");
                 }
             }
 

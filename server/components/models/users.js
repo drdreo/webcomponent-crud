@@ -74,35 +74,6 @@ userSchema.methods.comparePassword = function (candidatePassword, cb) {
 const UsersModel = connection.model('UserSchema', userSchema);
 
 
-//Model.find() returns the collection
-UsersModel.getAllUsers = (sort, callback) => {
-    console.log("finding all users ...");
-    UsersModel.find({}).sort(sort).exec(function (err, results) {
-        //invoke callback with your mongoose returned result
-        callback(err, results);
-    });
-    console.log("done finding");
-};
-
-//newUser.save is used to insert the document into MongoDB
-UsersModel.addUser = (newUser, callback) => {
-    newUser.save(callback);
-};
-
-
-//newUser.save is used to insert the document into MongoDB
-UsersModel.updateUser = (number, user, callback) => {
-    UsersModel.findOne({number: Number(number)}, function (err, doc) {
-        doc.username = user.username;
-        doc.email = user.email;
-        doc.password = user.password;
-        doc.save();
-
-        callback(err, doc);
-    });
-
-};
-
 //runningSince,  getting the date since the db is up and running.
 UsersModel.usersCount = (callback) => {
     UsersModel.count({}, function (err, cnt) {
@@ -115,35 +86,6 @@ UsersModel.runningSinceDate = (callback) => {
     UsersModel.collection.serverStatus(function (err, res) {
         callback(err, res);
     })
-};
-
-//Here we need to pass an id parameter to Model.remove
-UsersModel.deleteUserById = (id, callback) => {
-    let query = {_id: id};
-    UsersModel.remove(query, callback);
-};
-
-//Here we need to pass an id parameter to Model.remove
-UsersModel.getUserByUsername = (username, callback) => {
-    let query = {
-        username: {$regex: username}
-    };
-    UsersModel.findOne(query, function (err, result) {
-        // test a matching password
-
-        callback(err, result);
-    });
-    console.log("done getting username");
-};
-
-//Here we need to pass an id parameter to Model.remove
-UsersModel.getUserByID = (id, callback) => {
-
-    UsersModel.findOne({'number': Number(id)}, '', function (err, user) {
-        // test a matching password
-        callback(err, user);
-    });
-    console.log("done getting user by id ");
 };
 
 // fetch user and test password verification
