@@ -15,7 +15,6 @@
 <dom-module id="db-router">
     <template>
         <express-router path="/db">
-
             <express-router path="/">
                 <express-middleware method="get" path="/user/list" callback="{{listUsersMW}}"></express-middleware>
                 <express-middleware method="get" path="/user/:id"
@@ -31,7 +30,6 @@
                 <express-middleware method="get" path="/user/cnt"
                                     callback="[[userCountHandler]]"></express-middleware>
             </express-router>
-
         </express-router>
 
         <db-query id="queryListUsers" db-model="[[userModel]]">
@@ -57,7 +55,6 @@
             <db-find find-query="[[findUserQuery]]"></db-find>
             <db-delete></db-delete>
         </db-query>
-
 
     </template>
 

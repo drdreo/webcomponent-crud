@@ -68,7 +68,6 @@
                     }
                 });
 
-
                 this.userCreateHandler = (req, res) => {
                     this.sessionChecker(req, res, this.sendUserCreateSite);
                 };
@@ -80,7 +79,6 @@
                 this.userDetailsHandler = (req, res) => {
                     this.sessionChecker(req, res, this.sendUserDetailsSite);
                 };
-
             }
 
             connectedCallback() {
@@ -90,7 +88,6 @@
             ready() {
                 super.ready();
             }
-
 
             staticMW(app, express) {
                 app.use(express.static('client'));
@@ -113,9 +110,6 @@
 
             // middleware function to check for logged-in users
             sessionChecker(req, res, callback) {
-
-//                req.session.user = {"username": "Tester"};
-
                 if (!req.session.user && !req.cookies.user_sid) {
                     console.log("redirect -> login!");
                     res.redirect('/login');
@@ -131,8 +125,6 @@
             }
 
             sendUserDetailsSite(req, res) {
-                console.log("Sent user details site");
-
                 // if no valid param is given, id must be numeric
                 if (!isNaN(req.params.id)) {
                     res.sendFile(path.resolve('./client/userdetails.html'))
@@ -151,9 +143,7 @@
                 res.sendFile(path.resolve('./client/userlist.html'))
             }
 
-
             loginHandler(req, res) {
-
                 if (req.session.user && req.cookies.user_sid) {
                     res.clearCookie('user_sid');
                     res.redirect('/');
@@ -175,10 +165,8 @@
             undefinedPageMW(req, res) {
                 res.status(404).send("Sorry can't find that!")
             }
-
         }
 
         customElements.define(ServerApp.is, ServerApp);
-
     </script>
 </dom-module>
