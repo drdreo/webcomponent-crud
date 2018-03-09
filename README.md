@@ -32,5 +32,5 @@ Password is encoded, check how it is done in the code.#
 
 ## Author
 
-Andreas Hahn is a full-stack web-developer freelancer. You can visit him at [his website](http://andreas-hahn.at).
+Andreas Hahn is a full-stack web-developer freelancer based in Austria, NOT Australia. You can visit him at [his website](http://andreas-hahn.at).
 
