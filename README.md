@@ -1,5 +1,5 @@
 # Thesis project: Webkomponenten zur Erstellung von Javascript basierenden Serveranwendungen.
-This project is the practical work to the bachlor thesis. It's not ment to be used productive in any way. It was a proof of concept work to test the limits of webcomponents. To create an application (CMS) that does everything with and through webcomponents. Client UI, Server setup and database queries. But can this even work? Spoiler: It works!
+This project is the practical work of the bachlor thesis. It's not ment to be used productive in any way. It was a proof of concept work to test the limits of webcomponents. I've created an application (simple CRUD app) that does everything with and through webcomponents. Client UI, server setup and database queries. But can this even work? Spoiler: It works!
 
 ## Usage
 ```
