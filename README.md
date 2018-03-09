@@ -28,7 +28,7 @@ Password is encoded, check how it is done in the code.#
 * /server - server / backend files
 * /server/data - mongodb database data
 * README.md - this file
-* etc. stuff that the loaders need
+* Webkomponenten zur Erstellung von Javascript basierenden Serveranwendungen - Hahn Andreas.pdf - The bachelor thesis
 
 ## Author
 
