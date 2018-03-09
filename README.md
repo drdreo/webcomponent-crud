@@ -15,8 +15,8 @@ npm run start-w // development with a debug browser window (recommended)
 ## Quickstart
 ```
 mongod --dbpath <path-to-db-data>
-npm run dev // development without a debug browser window
-npm run dev-window // development with a debug browser window (recommended)
+npm run start // development without a debug browser window
+npm run start-w // development with a debug browser window (recommended)
 ```
 To access all pages of the project, you need to have a valid user to login.
 The mongoDB model needs to have fields: username, password, email, number.
