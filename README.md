@@ -22,7 +22,7 @@ To access all pages of the project, you need to have a valid user to login.
 The mongoDB model needs to have fields: username, password, email, number.
 So first create a dataset in the users collection with those fields.
 Password is encoded, check how it is done in the code.#
-## Contents
+## Content
 
 * /client - client / frontend files
 * /server - server / backend files
